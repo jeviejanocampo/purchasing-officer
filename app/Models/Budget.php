@@ -14,6 +14,7 @@ class Budget extends Model
     protected $fillable = [
         'reference_code',
         'input_budget',
-        'product_to_buy', // Add product_to_buy to the fillable array
+        'balance',
+        'product_to_buy',
     ];
 }

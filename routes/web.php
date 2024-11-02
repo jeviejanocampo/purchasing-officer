@@ -4,26 +4,32 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\InventoryController;
-use App\Models\Inventory; // Import Inventory model to access count
+use App\Models\Inventory; 
+use App\Models\Budget; 
 
-// Route for the main page
-Route::get('/', function () {
-    $inventoryCount = Inventory::count(); // Count the rows in the Inventory table
-    return view('main.main', compact('inventoryCount')); // Pass the inventory count to the view
-})->name('main');
 
-Route::get('/add-product', function () {
-    return view('addproduct'); // Return the addproduct view directly
-})->name('product.add');
-
-// Route for the dashboard
-Route::get('/dashboard', function () {
-    $inventoryCount = Inventory::count(); // Count the rows in the Inventory table
-    return view('dashboard', compact('inventoryCount')); // Pass the inventory count to the dashboard view
+Route::get('/main', function () {
+    return view('main.main'); 
 })->name('dashboard');
 
-// Route for calculation (show add product view)
-Route::get('/calculation', function () {
-    $inventoryCount = Inventory::count(); // Count the rows in the Inventory table
-    return view('addproduct', compact('inventoryCount')); // Pass the inventory count to the add product view
+Route::get('/dashboard', function () {
+    $inventoryCount = Inventory::count(); 
+    return view('dashboard', compact('inventoryCount')); 
+})->name('dashboard');
+
+Route::get('/stock-procurement', function () {
+    $inventoryCount = Inventory::count(); 
+    $budgets = Budget::orderBy('created_at', 'desc')->get();
+    $inventories = Inventory::orderBy('created_at', 'desc')->get();
+
+    return view('addproduct', compact('inventoryCount', 'budgets', 'inventories')); 
 })->name('calculation');
+
+
+Route::post('/budget/store', [BudgetController::class, 'store'])->name('budget.store');
+
+Route::get('/budget/allocation', [BudgetController::class, 'index'])->name('budget.allocation');
+
+Route::post('/product/store', [ProductController::class, 'store']);
+
+Route::post('/product/check-budget', [ProductController::class, 'checkBudgetIdentifier'])->name('product.checkBudget');
