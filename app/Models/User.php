@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -17,11 +17,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'pin', 'role'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -31,6 +27,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        // Optionally hide PIN from serialization for security
+        // 'pin', 
     ];
 
     /**
@@ -40,6 +38,31 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
+
+    /**
+     * Set the user's password.
+     * Automatically hashes the password when setting it.
+     *
+     * @param  string  $password
+     * @return void
+     */
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = Hash::make($password);
+    }
+
+
+    /**
+     * Set the user's PIN.
+     * Store the PIN directly without hashing.
+     *
+     * @param  string  $pin
+     * @return void
+     */
+    public function setPinAttribute($pin)
+    {
+        // Directly assign the PIN without hashing
+        $this->attributes['pin'] = $pin;
+    }
 }

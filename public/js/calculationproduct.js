@@ -177,11 +177,3 @@ function searchBudgets() {
     }
 }
 
-function filterInventory() {
-    // Get inventory items from your data source, then reverse the order
-    const inventoryItems = [...document.querySelectorAll('#inventory-section tbody tr')];
-    inventoryItems.reverse().forEach(item => {
-        item.parentNode.appendChild(item); // Reattach in reversed order
-    });
-    // Additional filtering logic here...
-}

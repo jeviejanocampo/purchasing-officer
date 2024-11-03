@@ -9,24 +9,47 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+        body {
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
 
-    
+        #budget-modal:target {
+            display: flex;
+        }
+    </style>
 </head>
 <body class="bg-gray-100" style="font-family: 'Roboto', sans-serif;">
 
     @extends('main.main') 
 
     @section('content')
+    
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Stock Procurement</h1>
-
+    @if(session('user_id'))
+                <p class="hidden" id="user-id">Your User ID: {{ session('user_id') }}</p>
+            @else
+                <p class="hidden">You are not logged in.</p>
+    @endif  
     <div class="mb-4">
+        <label for="section-selector" class="block text-sm font-medium text-gray-700">Select Section</label>
         <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
-            <option value="add-budget" selected>Add Budget</option>
-            <option value="add-product">Add Product</option>
-            <option value="budget-allocation">Budget Allocation</option>
-            <option value="inventory" selected>Inventory</option>  <!-- Inventory is now selected by default -->
+            <optgroup label="Budget Management">
+                <option value="add-budget" selected>Add Budget</option>
+                <option value="budget-allocation">Budget Allocation</option>
+            </optgroup>
+            <optgroup label="Product Management">
+                <option value="add-product">Add Product</option>
+            </optgroup>
+            <optgroup label="Inventory Management">
+                <option value="inventory">Inventory</option>  
+            </optgroup>
         </select>
     </div>
+
 
     <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
         <h1 class="text-xl font-bold mb-4">Add Budget</h1>
@@ -89,7 +112,7 @@
                     <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
                         <option value="" disabled selected>Select a budget identifier</option>
                         @foreach ($budgets as $budget)
-                            <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}">{{ $budget->id }}</option>
+                            <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">{{ $budget->id }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -98,9 +121,6 @@
                     <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
                     <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
                         <option value="" disabled selected>Select a product</option>
-                        @foreach ($budgets as $budget)
-                            <option value="{{ $budget->product_to_buy }}">{{ $budget->product_to_buy }}</option>
-                        @endforeach
                     </select>
                 </div>
             </div>
@@ -138,7 +158,6 @@
             Refresh
         </button>
 
-        <!-- Search Bar -->
         <div class="mt-4">
             <input 
                 type="text" 
@@ -149,7 +168,7 @@
             />
         </div>
 
-    <div class="overflow-y-auto h-2000">
+        <div class="overflow-y-auto h-2000">
             <table class="min-w-full border-collapse border border-gray-300 mt-4">
                 <thead>
                     <tr>
@@ -159,6 +178,9 @@
                     </tr>
                 </thead>
                 <tbody id="budgetTableBody">
+                    @php
+                        $totalBalance = 0; // Initialize total balance variable
+                    @endphp
                     @foreach ($budgets as $budget)
                         <tr>
                             <td class="border px-2 py-2">{{ $budget->id }}</td>
@@ -167,6 +189,9 @@
                                     <span class="text-red-500 font-semibold">Budget not used yet</span>
                                 @else
                                     ₱{{ number_format($budget->remaining_balance, 2) }}
+                                    @php
+                                        $totalBalance += $budget->remaining_balance; // Add to total balance
+                                    @endphp
                                 @endif
                             </td>
                             <td class="border px-2 py-2">
@@ -180,174 +205,246 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
+            <!-- <div class="mt-4">
+                <h2 class="text-lg font-semibold">Total Remaining Balance: ₱{{ number_format($totalBalance, 2) }}</h2>
+            </div> -->
+            </div>
     </div>
+        
 
 
-    <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-5 mb-5">
-    <h1 class="text-xl font-bold mb-4">Inventory</h1>
-    <div class="flex justify-between mb-4">
-        <!-- Search Bar for Budget Identifier -->
-        <div class="w-1/4">
-            <input 
-                type="text" 
-                id="budget-search" 
-                placeholder="Search by Budget Identifier" 
-                class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                onkeyup="filterInventory()"
-            />
+    <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-3 mb-5">
+        <h1 class="text-xl font-bold mb-4">Inventory</h1>
+        <div class="flex justify-between mb-4">
+            <div class="w-1/4">
+                <input 
+                    type="text" 
+                    id="budget-search" 
+                    placeholder="Search by Budget Identifier" 
+                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
+                    onkeyup="filterInventory()"
+                />
+            </div>
+
+            <!-- Date Range Filter -->
+            <div class="w-1/4 flex space-x-2">
+                <input 
+                    type="date" 
+                    id="start-date-filter" 
+                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
+                    onchange="filterInventory()"
+                />
+                <input 
+                    type="date" 
+                    id="end-date-filter" 
+                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
+                    onchange="filterInventory()"
+                />
+            </div>
         </div>
-
-        <!-- Date Range Filter -->
-        <div class="w-1/4 flex space-x-2">
-            <input 
-                type="date" 
-                id="start-date-filter" 
-                class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                onchange="filterInventory()"
-            />
-            <input 
-                type="date" 
-                id="end-date-filter" 
-                class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                onchange="filterInventory()"
-            />
-        </div>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full border-collapse border border-gray-300 mt-4" id="inventory-table">
-            <thead>
-                <tr>
-                    <th class="border px-2 py-2">Budget Identifier</th>
-                    <th class="border px-2 py-2">Product Name</th>
-                    <th class="border px-2 py-2">Unit Cost</th>
-                    <th class="border px-2 py-2">Pieces per Set</th>
-                    <th class="border px-2 py-2">Stocks per Set</th>
-                    <th class="border px-2 py-2">Created At</th>
-                    <th class="border px-2 py-2">Updated At</th>
-                    <th class="border px-2 py-2">Expiration Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($inventories as $inventory)
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse border border-gray-300 mt-4" id="inventory-table">
+                <thead>
                     <tr>
-                        <td class="border px-2 py-2">{{ $inventory->budget_identifier }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->product_name }}</td>
-                        <td class="border px-2 py-2">₱{{ number_format($inventory->unit_cost, 2) }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->pieces_per_set }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->stocks_per_set }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->created_at }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->updated_at }}</td>
-                        <td class="border px-2 py-2">{{ $inventory->exp_date }}</td>
+                        <th class="border px-2 py-2">Budget Identifier</th>
+                        <th class="border px-2 py-2">Product Name</th>
+                        <th class="border px-2 py-2">Unit Cost</th>
+                        <th class="border px-2 py-2">Pieces per Set</th>
+                        <th class="border px-2 py-2">Stocks per Set</th>
+                        <th class="border px-2 py-2">Created At</th>
+                        <th class="border px-2 py-2">Updated At</th>
+                        <th class="border px-2 py-2">Expiration Date</th>
+                        <th class="border px-2 py-2">Remarks</th> <!-- New Remarks column -->
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
+                </thead>
+                <tbody>
+                    @foreach ($inventories as $inventory)
+                        <tr>
+                            <td class="border px-2 py-2 flex items-center">
+                                {{ $inventory->budget_identifier }}
+                                <button 
+                                    class="ml-2 bg-blue-500 text-white rounded-md px-2 py-1" 
+                                    onclick="fetchBudgetDetails({{ $inventory->budget_identifier }})"
+                                >
+                                    View
+                                </button>
+                            </td>
+                            <td class="border px-2 py-2">{{ $inventory->product_name }}</td>
+                            <td class="border px-2 py-2">₱{{ number_format($inventory->unit_cost, 2) }}</td>
+                            <td class="border px-2 py-2">{{ $inventory->pieces_per_set }}</td>
+                            <td class="border px-2 py-2">{{ $inventory->stocks_per_set }}</td>
+                            <td class="border px-2 py-2">{{ $inventory->created_at }}</td>
+                            <td class="border px-2 py-2">{{ $inventory->updated_at }}</td>
+                            <td class="border px-2 py-2">{{ $inventory->exp_date }}</td>
+                            <td class="border px-2 py-2">
+                                @if($inventory->remarks) <!-- Check if remarks exist -->
+                                <button 
+                                    class="bg-blue-500 text-white rounded-md px-3 py-1 hover:bg-blue-600 transition duration-200" 
+                                    onclick="openViewRemarksModal('{{ $inventory->remarks }}')"
+                                >
+                                    View
+                                </button>
+                                    <!-- <span class="mx-2">{{ $inventory->remarks }}</span> -->
+                                    <button 
+                                        class="ml-2 bg-yellow-500 text-white rounded-md px-2 py-1" 
+                                        onclick="openEditRemarksModal('{{ $inventory->budget_identifier }}', '{{ $inventory->remarks }}')"
+                                    >
+                                        Edit
+                                    </button>
+                                @else
+                                    <button 
+                                        class="ml-2 bg-green-500 text-white rounded-md px-2 py-1" 
+                                        onclick="openRemarksModal('{{ $inventory->budget_identifier }}')"
+                                    >
+                                        Add Remarks
+                                    </button>
+                                @endif
+                            </td>
 
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="remarks-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-md p-5 w-1/3">
+            <h2 class="text-lg font-bold mb-4">Add/Edit Remarks</h2>
+            <textarea 
+                id="remarks-input" 
+                rows="4" 
+                class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
+                placeholder="Enter your remarks here..."
+            ></textarea>
+            <div class="flex justify-end mt-4">
+                <button 
+                    class="bg-blue-500 text-white rounded-md px-4 py-2" 
+                    onclick="saveRemarks()"
+                >
+                    Save
+                </button>
+                <button 
+                    class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" 
+                    onclick="closeRemarksModal()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-remarks-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-md p-5 w-1/3">
+            <h2 class="text-lg font-bold mb-4">View Remarks</h2>
+            <p id="view-remarks-text" class="text-gray-800"></p>
+            <div class="flex justify-end mt-4">
+                <button 
+                    class="bg-red-500 text-white rounded-md px-4 py-2" 
+                    onclick="closeViewRemarksModal()"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="budget-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-md p-5 w-11/12 md:w-1/3 relative">
+            <div id="modal-content"></div>
+            <a href="#" class="absolute top-3 right-3 text-xl text-gray-500 hover:text-gray-800">&times;</a>
+        </div>
+    </div>
+
+    <script>
+        let selectedBudgetIdentifier;
+
+        function openRemarksModal(budgetIdentifier) {
+            selectedBudgetIdentifier = budgetIdentifier;
+            document.getElementById('remarks-input').value = ''; // Clear input for adding remarks
+            document.getElementById('remarks-modal').classList.remove('hidden');
+        }
+
+        function openEditRemarksModal(budgetIdentifier, existingRemarks) {
+            selectedBudgetIdentifier = budgetIdentifier;
+            document.getElementById('remarks-input').value = existingRemarks; // Set existing remarks
+            document.getElementById('remarks-modal').classList.remove('hidden');
+        }
+
+        function closeRemarksModal() {
+            document.getElementById('remarks-modal').classList.add('hidden');
+            document.getElementById('remarks-input').value = ''; // Clear the input
+        }
+
+        function saveRemarks() {
+            const remarks = document.getElementById('remarks-input').value;
+
+            if (!remarks) {
+                alert('Please enter remarks.');
+                return;
+            }
+
+            // AJAX request to save the remarks in the database
+            fetch(`/inventory/${selectedBudgetIdentifier}/remarks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Add CSRF token
+                },
+                body: JSON.stringify({ remarks })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the table with the new remarks
+                    updateRemarksInTable(selectedBudgetIdentifier, remarks);
+                    closeRemarksModal();
+                } else {
+                    alert('Error saving remarks.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updateRemarksInTable(budgetIdentifier, remarks) {
+            // Find the correct row in the inventory table and update the remarks cell
+            const rows = document.querySelectorAll('#inventory-table tbody tr');
+            rows.forEach(row => {
+                const budgetIdCell = row.querySelector('td:first-child');
+                if (budgetIdCell.textContent.trim() === budgetIdentifier) {
+                    const remarksCell = row.querySelector('td:last-child'); // Assuming remarks is the last cell
+                    remarksCell.querySelector('span').textContent = remarks; // Update remarks
+                }
+            });
+        }
+
+        function openViewRemarksModal(remarks) {
+            document.getElementById('view-remarks-text').textContent = remarks; // Set the remarks in the modal
+            document.getElementById('view-remarks-modal').classList.remove('hidden'); // Show the modal
+        }
+
+        function closeViewRemarksModal() {
+            document.getElementById('view-remarks-modal').classList.add('hidden'); // Hide the modal
+        }
+    </script>
 
     @include('components.budget-modal')
     @endsection
 
+    <script src="{{ asset('js/inventory.js') }}"></script> 
     <script src="{{ asset('js/product.js') }}"></script>
     <script src="{{ asset('js/selection.js') }}"></script>
     <script src="{{ asset('js/calculationproduct.js') }}"></script>
     <script src="{{ asset('js/calculation.js') }}"></script>
+    <script src="{{ asset('js/budgetjs.js') }}"></script>
+    <script src="{{ asset('js/nof.js') }}"></script> 
+    <script src="{{ asset('js/form-data.js') }}"></script> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
     <script>
-        $(document).ready(function() {
-            // Handle form submission for adding a budget
-            $('#budget-form').on('submit', function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                // Gather form data
-                const formData = $(this).serializeArray();
-                let details = 'Please confirm your details:\n\n';
-                
-                // Append form data to details string
-                formData.forEach(function(field) {
-                    details += `${field.name}: ${field.value}\n`;
-                });
-
-                // Show confirmation dialog
-                swal({
-                    title: "Confirm Your Details",
-                    text: details,
-                    icon: "warning",
-                    buttons: {
-                        cancel: {
-                            text: "Cancel",
-                            value: null,
-                            visible: true,
-                            className: "bg-red-500 text-white",
-                            closeModal: true,
-                        },
-                        confirm: {
-                            text: "Confirm",
-                            value: true,
-                            visible: true,
-                            className: "bg-green-500 text-white",
-                            closeModal: true,
-                        }
-                    },
-                    dangerMode: true,
-                }).then((willProceed) => {
-                    if (willProceed) {
-                        // Proceed with AJAX request if confirmed
-                        $.ajax({
-                            url: "{{ route('budget.store') }}", // Using the route for storing budget
-                            type: "POST",
-                            data: $(this).serialize(), // Use the original form data
-                            success: function(response) {
-                                if (response.success) {
-                                    // Show success message
-                                    swal({
-                                        title: "Success",
-                                        text: response.message,
-                                        icon: "success"
-                                    });
-
-                                    // Update placeholders or perform any additional actions
-                                    $('#input-budget-display').text(`₱${response.data.input_budget}`);
-                                    $('#updated-remaining-balance-display').text(`₱${response.data.remaining_balance}`);
-                                } else {
-                                    swal({
-                                        title: "Error",
-                                        text: response.message,
-                                        icon: "error"
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                // Show error message
-                                swal({
-                                    title: "Error",
-                                    text: xhr.responseJSON ? xhr.responseJSON.message : "An error occurred. Please try again.",
-                                    icon: "error"
-                                });
-                            }
-                        });
-                    } else {
-                        // Optional feedback if canceled
-                        swal("Submission canceled", "You can edit your details and try again.", "info");
-                    }
-                });
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for success message
-            @if(session('success'))
-                alert("{{ addslashes(session('success')) }}");
-            @endif
-
-            // Check for error messages
-            @if($errors->any())
-                alert("{{ addslashes($errors->first()) }}");
-            @endif
-        });
+     const budgetStoreRoute = "{{ route('budget.store') }}";
     </script>
     <script>
         $(document).ready(function() {
@@ -392,56 +489,6 @@
             });
         });
     </script>
-    <script>
-        $(document).ready(function() {
-            // Handle form submission for adding a product
-            $('#add-product-form').on('submit', function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                // Gather form data
-                const formData = $(this).serialize();
-
-                // Send AJAX request
-                $.ajax({
-                    url: "/product/store", // Directly using the POST route for storing the product
-                    type: "POST",
-                    data: formData,
-                    success: function(response) {
-                        if (response.success) {
-                            // Show success message
-                            swal({
-                                title: "Success",
-                                text: response.message,
-                                type: "success"
-                            });
-
-                            // Update placeholders or perform any additional actions
-                            $('#input-budget').text(`₱${response.data.input_budget}`); // Assuming response has input_budget
-                            $('#updated-remaining-balance-display').text(`₱${response.data.remaining_balance}`); // Assuming response has remaining_balance
-
-                            // Optionally reset the form
-                            $('#add-product-form')[0].reset();
-                        } else {
-                            swal({
-                                title: "Error",
-                                text: response.message,
-                                type: "error"
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        // Show error message
-                        swal({
-                            title: "Error",
-                            text: xhr.responseJSON ? xhr.responseJSON.message : "An error occurred. Please try again.",
-                            type: "error"
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-
 
 </body>
 </html>
