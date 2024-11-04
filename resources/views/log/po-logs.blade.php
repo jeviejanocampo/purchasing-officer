@@ -1,5 +1,3 @@
-<!-- C:\xampp\htdocs\purchasing-officer\resources\views\log\po-logs.blade.php -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +13,17 @@
 @section('content')
     <div class="container mx-auto p-5">
         <h1 class="text-3xl font-bold mb-4">Purchase Officer Logs</h1>
-        
+
+        <!-- Search bar and date filter section -->
+        <div class="mb-5 flex justify-between items-center">
+            <input type="text" id="search-input" placeholder="Search logs..." class="p-2 border border-gray-300 rounded-md shadow-sm">
+            <div class="flex space-x-2">
+                <input type="date" id="start-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
+                <input type="date" id="end-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
+                <button id="clear-button" class="p-2 bg-gray-500 text-white rounded-md shadow-sm">Clear</button>
+            </div>
+        </div>
+
         @if(session('user_id'))
             <p class="hidden" id="user-id">Your User ID: {{ session('user_id') }}</p>
         @else
@@ -31,9 +39,9 @@
                     <th class="p-4 border-b">Updated At</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="logs-table">
                 @foreach($logs as $log)
-                    <tr class="hover:bg-gray-100">
+                    <tr class="log-row hover:bg-gray-100">
                         <td class="p-4 border-b text-center">{{ $log->id }}</td>
                         <td class="p-4 border-b">{{ $log->log_data }}</td>
                         <td class="p-4 border-b text-center">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
@@ -50,6 +58,9 @@
         @endif
     </div>
 @endsection
+
+<!-- Separate JavaScript file -->
+<script src="{{ asset('js/po-logs.js') }}"></script>
 
 </body>
 </html>

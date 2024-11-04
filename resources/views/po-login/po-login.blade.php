@@ -81,6 +81,7 @@
                     <input type="password" name="pin" id="pin" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="Enter your PIN">
                 </div>
                 <button type="submit" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
+                <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline" onclick="showForgotPinAlert()">Forgot PIN?</p>
             </form>
 
             @if(session('error'))
@@ -129,5 +130,40 @@
         </div>
     </div>
     <script src="{{ asset('js/pinlogin-alert.js') }}"></script>
+    <script>
+        function toggleForm(formType) {
+            document.getElementById('email-password-form').style.display = formType === 'email' ? 'block' : 'none';
+            document.getElementById('pin-form').style.display = formType === 'pin' ? 'block' : 'none';
+            document.getElementById('signup-form').style.display = formType === 'signup' ? 'block' : 'none';
+        }
+
+        function generatePin() {
+            const pin = Math.floor(10000 + Math.random() * 90000); // Generates a 5-digit random number
+            document.getElementById('generated-pin').value = pin;
+        }
+
+        // Function to confirm before submission
+        function confirmSubmission() {
+            const confirmation = confirm("Confirm details before proceeding? Yes or No");
+            if (confirmation) {
+                submitRegistration();
+            } else {
+                console.log("User canceled the registration.");
+            }
+        }
+
+        // Directly submit the signup form without confirmation and log the action
+        function submitRegistration() {
+            console.log("Submit button clicked. Preparing to submit the registration form.");
+            document.getElementById('signup-form-element').submit();
+            alert("Registration successful! Please wait for confirmation from admin to access your portal.");
+            console.log("Form submitted.");
+        }
+
+        // Function to show forgot PIN alert
+        function showForgotPinAlert() {
+            alert("Contact the admin at 0945323232 / 43434343 to change your PIN.");
+        }
+    </script>
 </body>
 </html>

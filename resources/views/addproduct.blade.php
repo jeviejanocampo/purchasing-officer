@@ -38,14 +38,14 @@
         <label for="section-selector" class="block text-sm font-medium text-gray-700">Select Section</label>
         <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
             <optgroup label="Budget Management">
-                <option value="add-budget" selected>Add Budget</option>
+                <option value="add-budget">Add Budget</option>
                 <option value="budget-allocation">Budget Allocation</option>
             </optgroup>
             <optgroup label="Product Management">
                 <option value="add-product">Add Product</option>
             </optgroup>
             <optgroup label="Inventory Management">
-                <option value="inventory">Inventory</option>  
+                <option value="inventory" selected >Inventory</option>  
             </optgroup>
         </select>
     </div>
