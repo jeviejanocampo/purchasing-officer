@@ -20,7 +20,24 @@
         #budget-modal:target {
             display: flex;
         }
+        .stocks-low-animation {
+            animation: beat 0.5s infinite; /* Infinite beat animation */
+        }
+
+        @keyframes beat {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2); /* Scale up */
+            }
+            100% {
+                transform: scale(1); /* Scale back to original size */
+            }
+        }
+
     </style>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-100" style="font-family: 'Roboto', sans-serif;">
 
@@ -37,9 +54,9 @@
     <div class="mb-4">
         <label for="section-selector" class="block text-sm font-medium text-gray-700">Select Section</label>
         <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
-            <optgroup label="Budget Management">
-                <option value="add-budget">Add Budget</option>
-                <option value="budget-allocation">Budget Allocation</option>
+            <optgroup label="Restock Budget Management">
+                <option value="add-budget">Add Budget for Restocking</option>
+                <option value="budget-allocation">Restocking Budget Allocation</option>
             </optgroup>
             <optgroup label="Product Management">
                 <option value="add-product">Add Product</option>
@@ -49,7 +66,6 @@
             </optgroup>
         </select>
     </div>
-
 
     <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
         <h1 class="text-xl font-bold mb-4">Add Budget</h1>
@@ -166,53 +182,52 @@
                 id="searchBudget"
                 onkeyup="searchBudgets()"
             />
-        </div>
-
-        <div class="overflow-y-auto h-2000">
-            <table class="min-w-full border-collapse border border-gray-300 mt-4">
-                <thead>
-                    <tr>
-                        <th class="border px-2 py-2">Budget ID</th>
-                        <th class="border px-2 py-2">Balance</th>
-                        <th class="border px-2 py-2">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="budgetTableBody">
-                    @php
-                        $totalBalance = 0; // Initialize total balance variable
-                    @endphp
-                    @foreach ($budgets as $budget)
-                        <tr>
-                            <td class="border px-2 py-2">{{ $budget->id }}</td>
-                            <td class="border px-2 py-2">
-                                @if($budget->remaining_balance == 0)
-                                    <span class="text-red-500 font-semibold">Budget not used yet</span>
-                                @else
-                                    ₱{{ number_format($budget->remaining_balance, 2) }}
-                                    @php
-                                        $totalBalance += $budget->remaining_balance; // Add to total balance
-                                    @endphp
-                                @endif
-                            </td>
-                            <td class="border px-2 py-2">
-                                <button 
-                                    onclick="openModal({{ json_encode($budget) }})" 
-                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300">
-                                    View
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <!-- <div class="mt-4">
-                <h2 class="text-lg font-semibold">Total Remaining Balance: ₱{{ number_format($totalBalance, 2) }}</h2>
-            </div> -->
-            </div>
     </div>
+
+    <div class="overflow-y-auto h-200">
+        <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border px-1 py-1">Budget ID</th> <!-- Reduced padding -->
+                    <th class="border px-1 py-1">Balance</th> <!-- Reduced padding -->
+                    <th class="border px-1 py-1">Action</th> <!-- Reduced padding -->
+                </tr>
+            </thead>
+            <tbody id="budgetTableBody">
+                @php
+                    $totalBalance = 0; // Initialize total balance variable
+                @endphp
+                @foreach ($budgets as $budget)
+                    <tr>
+                        <td class="border px-1 py-1">{{ $budget->id }}</td> <!-- Reduced padding -->
+                        <td class="border px-1 py-1">
+                            @if($budget->remaining_balance == 0)
+                                <span class="text-red-500 font-semibold">Budget not used yet</span>
+                            @else
+                                ₱{{ number_format($budget->remaining_balance, 2) }}
+                                @php
+                                    $totalBalance += $budget->remaining_balance; // Add to total balance
+                                @endphp
+                            @endif
+                        </td>
+                        <td class="border px-1 py-1">
+                            <button 
+                                onclick="openModal({{ json_encode($budget) }})" 
+                                class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <!-- <div class="mt-4">
+            <h2 class="text-lg font-semibold">Total Remaining Balance: ₱{{ number_format($totalBalance, 2) }}</h2>
+        </div> -->
+    </div>
+    </div>
+
         
-
-
     <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-3 mb-5">
         <h1 class="text-xl font-bold mb-4">Inventory</h1>
         <div class="flex justify-between mb-4">
@@ -246,20 +261,23 @@
             <table class="min-w-full border-collapse border border-gray-300 mt-4" id="inventory-table">
                 <thead>
                     <tr>
-                        <th class="border px-2 py-2">Budget Identifier</th>
-                        <th class="border px-2 py-2">Product Name</th>
-                        <th class="border px-2 py-2">Unit Cost</th>
-                        <th class="border px-2 py-2">Pieces per Set</th>
-                        <th class="border px-2 py-2">Stocks per Set</th>
-                        <th class="border px-2 py-2">Created At</th>
-                        <th class="border px-2 py-2">Updated At</th>
-                        <th class="border px-2 py-2">Expiration Date</th>
-                        <th class="border px-2 py-2">Remarks</th> <!-- New Remarks column -->
+                        <th class="border px-1 py-1">Inventory ID</th>
+                        <th class="border px-1 py-1">Budget ID</th>
+                        <th class="border px-1 py-1">Product Name</th>
+                        <th class="border px-1 py-1">Unit Cost</th>
+                        <th class="border px-1 py-1">Pieces per Set</th>
+                        <th class="border px-1 py-1">Stocks per Set</th>
+                        <th class="border px-1 py-1">Created At</th>
+                        <th class="border px-1 py-1">Expiration Date</th>
+                        <th class="border px-1 py-1">Status</th> 
+                        <th class="border px-1 py-1">Remarks</th> 
+                        <th class="border px-1 py-1">View Details</th> 
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($inventories as $inventory)
                         <tr>
+                            <td class="border px-1 py-1">{{ $inventory->id }}</td>
                             <td class="border px-2 py-2 flex items-center">
                                 {{ $inventory->budget_identifier }}
                                 <button 
@@ -269,42 +287,83 @@
                                     View
                                 </button>
                             </td>
-                            <td class="border px-2 py-2">{{ $inventory->product_name }}</td>
-                            <td class="border px-2 py-2">₱{{ number_format($inventory->unit_cost, 2) }}</td>
-                            <td class="border px-2 py-2">{{ $inventory->pieces_per_set }}</td>
-                            <td class="border px-2 py-2">{{ $inventory->stocks_per_set }}</td>
-                            <td class="border px-2 py-2">{{ $inventory->created_at }}</td>
-                            <td class="border px-2 py-2">{{ $inventory->updated_at }}</td>
-                            <td class="border px-2 py-2">{{ $inventory->exp_date }}</td>
-                            <td class="border px-2 py-2">
-                                @if($inventory->remarks) <!-- Check if remarks exist -->
+                            <td class="border px-1 py-1">{{ $inventory->product_name }}</td>
+                            <td class="border px-1 py-1">₱{{ number_format($inventory->unit_cost, 2) }}</td>
+                            <td class="border px-1 py-1">{{ $inventory->pieces_per_set }}</td>
+                            <td class="border px-1 py-1 relative">
+                                {{ $inventory->stocks_per_set }}
+                                @if ($inventory->stocks_per_set <= 10)
+                                    <span class="absolute right-0 top-0 bg-red-800 text-white text-xs px-2 py-1 rounded-full stocks-low-animation">
+                                        Stocks Low
+                                    </span>
+                                @endif
+                                <script>
+                                    checkLowStock({{ $inventory->stocks_per_set }}, '{{ $inventory->product_name }}');
+                                </script>
+                            </td>
+                            <td class="border px-1 py-1">{{ $inventory->created_at }}</td>
+                            <td class="border px-1 py-1">{{ $inventory->exp_date }}</td>
+                            <td class="border px-1 py-1">
+                                <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
                                 <button 
-                                    class="bg-blue-500 text-white rounded-md px-3 py-1 hover:bg-blue-600 transition duration-200" 
-                                    onclick="openViewRemarksModal('{{ $inventory->remarks }}')"
+                                    class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
+                                    onclick="openSetStatusModal({{ $inventory->id }}, '{{ $inventory->set_status }}')"
                                 >
-                                    View
+                                    Edit
                                 </button>
-                                    <!-- <span class="mx-2">{{ $inventory->remarks }}</span> -->
+                            </td>
+                            <td class="border px-1 py-1">
+                                @if($inventory->remarks)
                                     <button 
-                                        class="ml-2 bg-yellow-500 text-white rounded-md px-2 py-1" 
+                                        class="bg-blue-700 text-white rounded-md px-3 py-1 hover:bg-blue-800 transition duration-200" 
+                                        onclick="openViewRemarksModal('{{ $inventory->remarks }}')"
+                                    >
+                                        View
+                                    </button>
+                                    <button 
+                                        class="ml-2 bg-yellow-600 text-white rounded-md px-1 py-1 hover:bg-yellow-700" 
                                         onclick="openEditRemarksModal('{{ $inventory->budget_identifier }}', '{{ $inventory->remarks }}')"
                                     >
                                         Edit
                                     </button>
                                 @else
                                     <button 
-                                        class="ml-2 bg-green-500 text-white rounded-md px-2 py-1" 
+                                        class="ml-2 bg-green-600 text-white rounded-md px-1 py-1 hover:bg-green-700" 
                                         onclick="openRemarksModal('{{ $inventory->budget_identifier }}')"
                                     >
                                         Add Remarks
-                                    </button>
-                                @endif
-                            </td>
+                                        </button>
+                                    @endif
+                                </td>
+                                <td class="border px-2 py-2">
+                                    <a 
+                                        href="{{ route('inventory.details', ['id' => $inventory->id]) }}" 
+                                        class="bg-blue-700 text-white rounded-md px-1 py-1 hover:bg-blue-800 transition duration-200">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+    </div>
 
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    <div id="set-status-modal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-md p-5">
+                <h2 class="text-lg font-bold mb-4">Edit Set Status</h2>
+                <select id="status-select" class="block w-full border border-gray-300 rounded-md p-2 mb-4">
+                    <option value="In Stock">In Stock</option>
+                    <option value="On Order">On Order</option>
+                    <option value="Discontinued">Discontinued</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Damaged">Damaged</option>
+                </select>
+                <div class="flex justify-end">
+                    <button id="save-status-button" class="bg-blue-500 text-white rounded-md px-4 py-2" onclick="saveStatus()">Save</button>
+                    <button class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" onclick="closeSetStatusModal()">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -432,6 +491,7 @@
     @include('components.budget-modal')
     @endsection
 
+    <script src="{{ asset('js/alert-stocks.js') }}"></script> 
     <script src="{{ asset('js/inventory.js') }}"></script> 
     <script src="{{ asset('js/product.js') }}"></script>
     <script src="{{ asset('js/selection.js') }}"></script>

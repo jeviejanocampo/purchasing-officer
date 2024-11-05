@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LogController;
+use Illuminate\Support\Facades\DB;
 use App\Models\Inventory; 
 use App\Models\Budget; 
 
@@ -16,7 +17,8 @@ Route::get('/main', function () {
 
 Route::get('/dashboard', function () {
     $inventoryCount = Inventory::count(); 
-    return view('dashboard', compact('inventoryCount')); 
+    $totalBudgetAllocated = Inventory::sum(DB::raw('unit_cost * pieces_per_set * stocks_per_set')); 
+    return view('dashboard', compact('inventoryCount', 'totalBudgetAllocated')); 
 })->name('dashboard');
 
 Route::get('/stock-procurement', function () {
@@ -56,3 +58,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/inventory/{budget_identifier}/remarks', [InventoryController::class, 'addRemarks']);
 
 Route::get('/inventory/data', [InventoryController::class, 'fetchInventoryData'])->name('inventory.data');
+
+Route::get('/addproduct', [ProductController::class, 'addProduct'])->name('addproduct');
+
+Route::get('/inventory/{id}', [InventoryController::class, 'show'])->name('inventory.details');
+
+Route::post('/inventory/{id}/update-status', [InventoryController::class, 'updateStatus']);
