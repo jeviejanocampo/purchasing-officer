@@ -56,16 +56,54 @@
         <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
             <optgroup label="Restock Budget Management">
                 <option value="add-budget">Add Budget for Restocking</option>
-                <option value="budget-allocation">Restocking Budget Allocation</option>
             </optgroup>
             <optgroup label="Product Management">
-                <option value="add-product">Add Product</option>
+            <option value="add-product-details">Add Product Details for Restocking</option> 
+                <option value="add-product">Add Product To The Inventory</option>
             </optgroup>
             <optgroup label="Inventory Management">
-                <option value="inventory" selected >Inventory</option>  
+                <option value="product-details">Product Details</option>
+                <option value="inventory" selected>Inventory</option>  
+                <option value="budget-allocation">Restocking Budget Allocation</option>
             </optgroup>
         </select>
     </div>
+
+
+    <div id="product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
+    <h1 class="text-xl font-bold mb-4">Product Details</h1>
+
+    <table class="min-w-full table-auto text-sm">
+        <thead>
+            <tr>
+                <th class="px-2 py-1 border-b">Product ID</th>
+                <th class="px-2 py-1 border-b">Product Name</th>
+                <th class="px-2 py-1 border-b">Product Image</th>
+                <th class="px-2 py-1 border-b">Created At</th>
+                <th class="px-2 py-1 border-b">Product Status</th>
+                <th class="px-2 py-1 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($products as $product)
+                <tr>
+                    <td class="px-2 py-1 border-b">{{ $product->product_id }}</td>
+                    <td class="px-2 py-1 border-b">{{ $product->product_name }}</td>
+                    <td class="px-2 py-1 border-b">
+                        <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="w-12 h-12 object-cover">
+                    </td>
+                    <td class="px-2 py-1 border-b">{{ $product->created_at }}</td>
+                    <td class="px-2 py-1 border-b">{{ $product->product_status }}</td>
+                    <td class="px-2 py-1 border-b">
+                        <a href="{{ route('product.details', $product->product_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300">Edit</a>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
+
 
     <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
         <h1 class="text-xl font-bold mb-4">Add Budget</h1>
@@ -111,59 +149,200 @@
     <div id="add-product-section" class="section hidden bg-white rounded-lg shadow-md p-5">
         <h1 class="text-xl font-bold mb-4">Add Product</h1>
         <form id="add-product-form" action="/product/store" method="POST">
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Budget Inputted:</label>
-                <h3 id="input-budget" class="mt-1 text-sm text-gray-800">₱0.00</h3>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Remaining Balance:</label>
-                <span id="updated-remaining-balance-display" class="block mt-1 text-sm text-gray-800">₱0.00</span>
-            </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Budget Inputted:</label>
+            <h3 id="input-budget" class="mt-1 text-sm text-gray-800">₱0.00</h3>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Remaining Balance:</label>
+            <span id="updated-remaining-balance-display" class="block mt-1 text-sm text-gray-800">₱0.00</span>
+        </div>
 
-            <div class="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                    <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
-                    <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
-                        <option value="" disabled selected>Select a budget identifier</option>
-                        @foreach ($budgets as $budget)
-                            <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">{{ $budget->id }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
-                    <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
-                        <option value="" disabled selected>Select a product</option>
-                    </select>
-                </div>
+        <div class="mb-4 grid grid-cols-2 gap-4">
+            <div>
+                <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
+                <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
+                    <option value="" disabled selected>Select a budget identifier</option>
+                    @foreach ($budgets as $budget)
+                        <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">{{ $budget->id }}</option>
+                    @endforeach
+                </select>
             </div>
 
-            <div class="mb-4 grid grid-cols-3 gap-4">
-                <div>
-                    <label for="unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost:</label>
-                    <input type="number" id="unit-cost" name="unit_cost" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="₱0.00" step="0.01" required onchange="calculateStocks()" onkeyup="calculateStocks()">
-                </div>
-                <div>
-                    <label for="pieces-per-set" class="block text-sm font-medium text-gray-700">Pieces per Set:</label>
-                    <input type="number" id="pieces-per-set" name="pieces_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required onchange="calculateStocks()" onkeyup="calculateStocks()">
-                </div>
-                <div>
-                    <label for="stocks-per-set" class="block text-sm font-medium text-gray-700">Stocks per Set:</label>
-                    <input type="number" id="stocks-per-set" name="stocks_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required>
-                </div>
+            <div>
+                <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
+                <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
+                    <option value="" disabled selected>Select a product</option>
+                </select>
             </div>
+        </div>
 
-            <div class="mb-4">
-                <label for="expiration-date" class="block text-sm font-medium text-gray-700">Expiration Date:</label>
+        <div class="mb-4 grid grid-cols-2 gap-4">
+        <div>
+            <label for="product-id-selector" class="block text-sm font-medium text-gray-700">Select Product ID:</label>
+            <select id="product-id-selector" name="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
+                <!-- Default option with value 0 -->
+                <option value="0" selected>0 - Temporary Option</option>
+                
+                <!-- Dynamically populated product options -->
+                @foreach ($productIds as $product)
+                    <option value="{{ $product->product_id }}">
+                        {{ $product->product_id }} - {{ $product->product_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-4 grid grid-cols-3 gap-4">
+            <div>
+                <label for="unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost:</label>
+                <input type="number" id="unit-cost" name="unit_cost" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="₱0.00" step="0.01" required onchange="calculateStocks()" onkeyup="calculateStocks()">
+            </div>
+            <div>
+                <label for="pieces-per-set" class="block text-sm font-medium text-gray-700">Pieces per Set:</label>
+                <input type="number" id="pieces-per-set" name="pieces_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required onchange="calculateStocks()" onkeyup="calculateStocks()">
+            </div>
+            <div>
+                <label for="stocks-per-set" class="block text-sm font-medium text-gray-700">Stocks per Set:</label>
+                <input type="number" id="stocks-per-set" name="stocks_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="expiration-date" class="block text-sm font-medium text-gray-700">Expiration Date:</label>
                 <input type="date" id="expiration-date" name="expiration_date" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" required>
             </div>
 
             <button type="submit" class="mt-4 bg-blue-500 text-white rounded-md p-2">Add Product</button>
         </form>
     </div>
+
+    <div id="add-product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
+        <h1 class="text-xl font-bold mb-4">Budget Details</h1>
+
+        <button 
+            onclick="location.reload()" 
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300 mb-4">
+            Refresh
+        </button>
+
+        <div class="mt-4">
+            <input 
+                type="text" 
+                placeholder="Search by Budget ID..." 
+                class="border rounded-lg px-3 py-2 w-full lg:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="searchBudget"
+                onkeyup="searchBudgets()"
+            />
+        </div>
+
+        <div class="overflow-y-auto h-200">
+            <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border px-1 py-1">Budget ID</th> <!-- Reduced padding -->
+                        <th class="border px-1 py-1">Balance</th> <!-- Reduced padding -->
+                        <th class="border px-1 py-1">Product To Buy</th> <!-- Reduced padding -->
+                        <th class="border px-1 py-1">Action</th> <!-- Reduced padding -->
+                    </tr>
+                </thead>
+                <tbody id="budgetTableBody">
+                    @php
+                        $totalBalance = 0; // Initialize total balance variable
+                    @endphp
+                    @foreach ($budgets as $budget)
+                        <!-- Check if the remaining_balance is zero (Budget not used yet) -->
+                        @if($budget->remaining_balance == 0)
+                            <tr>
+                                <td class="border px-1 py-1">{{ $budget->id }}</td> <!-- Reduced padding -->
+                                <td class="border px-1 py-1">
+                                    <span class="text-red-500 font-semibold">Budget not used yet</span>
+                                </td>
+                                <td class="border px-1 py-1">{{ $budget->product_to_buy }}</td> <!-- Product To Buy -->
+                                <td class="border px-1 py-1">
+                                    <button 
+                                        onclick="openModal({{ json_encode($budget) }})" 
+                                        class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        
+
+        <h1 class="text-xl font-bold mb-4 mt-10">Add Product Details for Restocking</h1>
+        <form action="{{ route('product.addRestockDetails') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                <!-- Product Name -->
+                <div class="mt-4 mb-4">
+                    <label for="product_name" class="block text-sm font-medium text-gray-700">Product Name</label>
+                    <select id="product_name" name="product_name" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <option value="">Select Product</option>
+                        @foreach($productNames as $product)
+                            <option value="{{ $product->product_to_buy }}">{{ $product->product_to_buy }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Product Image -->
+                <div class="mt-4 mb-4">
+                    <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
+                    <input type="file" id="product_image" name="product_image" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+
+                <!-- Product Status -->
+                <div class="mt-4 mb-4">
+                    <label for="product_status" class="block text-sm font-medium text-gray-700">Product Status</label>
+                    <select id="product_status" name="product_status" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <option value="Ordered">Ordered</option>
+                        <option value="Back-Ordered">Back-Ordered</option>
+                        <option value="In Stock">In Stock</option>
+                        <option value="Not Available">Not Available</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 mt-4">
+                Add Product
+            </button>
+        </form>
+    </div>
+
+
+    @if(session('success'))
+        <script>
+            swal({
+                title: "Success!",
+                text: "{{ session('success') }}",
+                type: "success",
+                confirmButtonText: "OK"
+            });
+        </script>
+    @endif
+
+    @if(session('error'))
+        <script>
+            swal({
+                title: "Error!",
+                text: "{{ session('error') }}",
+                type: "error",
+                confirmButtonText: "Try Again"
+            });
+        </script>
+    @endif
 
     <div id="budget-allocation-section" class="section hidden bg-white rounded-lg shadow-md p-5">
         <h1 class="text-xl font-bold mb-4">Budget Allocation Details for Product Purchase</h1>
@@ -182,7 +361,7 @@
                 id="searchBudget"
                 onkeyup="searchBudgets()"
             />
-    </div>
+        </div>
 
     <div class="overflow-y-auto h-200">
         <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->

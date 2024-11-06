@@ -22,12 +22,28 @@ Route::get('/dashboard', function () {
 })->name('dashboard');
 
 Route::get('/stock-procurement', function () {
-    $inventoryCount = Inventory::count(); 
+    // Fetch the count of inventory items
+    $inventoryCount = Inventory::count();
+
+    // Fetch all budgets sorted by creation date
     $budgets = Budget::orderBy('created_at', 'desc')->get();
+
+    // Fetch all inventories sorted by creation date
     $inventories = Inventory::orderBy('created_at', 'desc')->get();
 
-    return view('addproduct', compact('inventoryCount', 'budgets', 'inventories')); 
+    // Fetch all product details from the products table
+    $products = \App\Models\Product::all(); // Fetch all columns from the products table
+
+    // Fetch all product IDs from the products table
+    $productIds = \App\Models\Product::select('product_id', 'product_name')->get();
+
+    $productNames = \App\Models\Budget::select('product_to_buy')->distinct()->get();
+
+
+    // Pass the data to the view
+    return view('addproduct', compact('inventoryCount', 'budgets', 'inventories', 'productIds', 'products', 'productNames'));
 })->name('calculation');
+
 
 
 Route::post('/budget/store', [BudgetController::class, 'store'])->name('budget.store');
@@ -64,3 +80,13 @@ Route::get('/addproduct', [ProductController::class, 'addProduct'])->name('addpr
 Route::get('/inventory/{id}', [InventoryController::class, 'show'])->name('inventory.details');
 
 Route::post('/inventory/{id}/update-status', [InventoryController::class, 'updateStatus']);
+
+Route::post('/product/add-restock-details', [ProductController::class, 'addRestockDetails'])->name('product.addRestockDetails');
+
+Route::get('/product-details/{product_id}', function ($product_id) {
+    // Fetch the product by ID
+    $product = \App\Models\Product::find($product_id);
+    
+    // Pass product data to the view
+    return view('dashboard-components.product-details', compact('product'));
+})->name('product.details');

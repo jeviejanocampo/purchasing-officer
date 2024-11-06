@@ -13,6 +13,7 @@ class Inventory extends Model
 
     protected $fillable = [
         'budget_identifier',
+        'product_id', // Add product_id to fillable
         'product_name',
         'unit_cost',
         'pieces_per_set',

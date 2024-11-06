@@ -3,7 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Inventory;
 use App\Models\Budget;
-use App\Models\Log; // Import the Log model
+use App\Models\Product;
+use App\Models\Log; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log as FacadeLog;
 
@@ -14,6 +15,7 @@ class ProductController extends Controller
         // Validate the incoming request data
         $request->validate([
             'budget_identifier' => 'required|exists:budget,id',
+            'product_id' => 'required|exists:products,product_id',  // Validate product_id
             'product_name' => 'required|string|max:255',
             'unit_cost' => 'required|numeric|min:0',
             'pieces_per_set' => 'required|integer|min:1',
@@ -60,6 +62,7 @@ class ProductController extends Controller
         // Create a new inventory item
         Inventory::create([
             'budget_identifier' => $request->budget_identifier,
+            'product_id' => $request->product_id,  // Save product_id
             'product_name' => $request->product_name,
             'unit_cost' => $request->unit_cost,
             'pieces_per_set' => $request->pieces_per_set,
@@ -91,7 +94,9 @@ class ProductController extends Controller
 
     public function create()
     {
+        $productIds = \App\Models\Product::select('product_id')->get();
         $budgets = Budget::with('products')->get();
+        $productIds = Product::select('product_id')->get();
         return view('addproduct', compact('budgets'));
     }
 
@@ -117,5 +122,52 @@ class ProductController extends Controller
         $logData = json_encode(array_merge(['message' => $message], $data)); // Convert to JSON format
         Log::create(['log_data' => $logData]); // Insert into logs table
         FacadeLog::info($message, $data); // Optional: Also log to Laravel's default log
+    }
+
+    public function addRestockDetails(Request $request)
+    {
+        // Validate the incoming request data
+        $request->validate([
+            'product_name' => 'required|string|max:255',
+            'product_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'product_status' => 'required|string|in:Ordered,Back-Ordered,In Stock,Not Available,Out of Stock',
+        ]);
+
+        try {
+            // Handle image upload and clean up the filename
+            $image = $request->file('product_image');
+            
+            // Get original filename and remove any unwanted characters
+            $filename = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $filename = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename); // Remove non-alphanumeric characters
+            
+            // Ensure the file name is unique by appending a timestamp or using a unique identifier
+            $imageName = $filename . '.' . $image->getClientOriginalExtension();
+            
+            // Store the image in the default storage path
+            $image->storeAs('', $imageName); // Only the filename, no path (it goes to default storage location)
+
+            // Create a new product (Product Price, Description, Stocks, and Expiry Date will use defaults)
+            Product::create([
+                'product_name' => $request->product_name,
+                'product_image' => $imageName,
+                'product_status' => $request->product_status,  // Store selected status
+                // Product price, description, stocks, and expiry date will use their default values
+            ]);
+
+            // Return with success message
+            return redirect()->back()->with('success', 'Product added successfully.');
+
+        } catch (\Exception $e) {
+            // Return with error message
+            return redirect()->back()->with('error', 'Something went wrong. Please try again.');
+        }
+    }
+
+    public function showProductDetails()
+    {
+        $products = Product::all(); // Fetch all products from the database
+
+        return view('your-view-name', compact('products'));
     }
 }
