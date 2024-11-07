@@ -39,7 +39,7 @@ function updateInventoryTable(inventories) {
                 <td class="border px-1 py-1">${inventory.exp_date}</td>
                 <td class="border px-1 py-1" id="set-status-${inventory.id}">
                     ${inventory.set_status}
-                    <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openSetStatusModal(${inventory.id}, '${inventory.set_status}')">Edit</button>
+                    <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openSetStatusModalForInventory(${inventory.id}, '${inventory.set_status}')">Edit</button>
                 </td>   
                 <td class="border px-1 py-1">
                     ${inventory.remarks ? 
@@ -69,14 +69,19 @@ setInterval(fetchInventory, 5000);
 
 let selectedInventoryId = null;
 
-function openSetStatusModal(inventoryId, currentStatus) {
+function openSetStatusModalForInventory(inventoryId, currentStatus) {
     selectedInventoryId = inventoryId;
     document.getElementById('status-select').value = currentStatus;
-    document.getElementById('set-status-modal').classList.remove('hidden');
+    document.getElementById('set-status-modal-for-inventory').classList.remove('hidden');
 }
 
 function closeSetStatusModal() {
     document.getElementById('set-status-modal').classList.add('hidden');
+    selectedInventoryId = null;
+}
+
+function closeSetStatusModalForInventory() {
+    document.getElementById('set-status-modal-for-inventory').classList.add('hidden');
     selectedInventoryId = null;
 }
 

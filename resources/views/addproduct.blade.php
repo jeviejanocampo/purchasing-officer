@@ -71,131 +71,178 @@
 
 
     <div id="product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-    <h1 class="text-xl font-bold mb-4">Product Details</h1>
+        <h1 class="text-xl font-bold mb-4">Product Details</h1>
 
-    <table class="min-w-full table-auto text-sm">
-        <thead>
-            <tr>
-                <th class="px-2 py-1 border-b">Product ID</th>
-                <th class="px-2 py-1 border-b">Product Name</th>
-                <th class="px-2 py-1 border-b">Product Image</th>
-                <th class="px-2 py-1 border-b">Created At</th>
-                <th class="px-2 py-1 border-b">Product Status</th>
-                <th class="px-2 py-1 border-b">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($products as $product)
+        <table class="min-w-full table-auto text-sm">
+            <thead>
                 <tr>
-                    <td class="px-2 py-1 border-b">{{ $product->product_id }}</td>
-                    <td class="px-2 py-1 border-b">{{ $product->product_name }}</td>
-                    <td class="px-2 py-1 border-b">
-                        <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="w-12 h-12 object-cover">
-                    </td>
-                    <td class="px-2 py-1 border-b">{{ $product->created_at }}</td>
-                    <td class="px-2 py-1 border-b">{{ $product->product_status }}</td>
-                    <td class="px-2 py-1 border-b">
-                        <a href="{{ route('product.details', $product->product_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300">Edit</a>
-                    </td>
+                    <th class="px-2 py-1 border-b">Product ID</th>
+                    <th class="px-2 py-1 border-b">Product Name</th>
+                    <th class="px-2 py-1 border-b">Product Image</th>
+                    <th class="px-2 py-1 border-b">Created At</th>
+                    <th class="px-2 py-1 border-b">Product Status</th>
+                    <th class="px-2 py-1 border-b">Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                @foreach ($products as $product)
+                    <tr data-details-status="{{ $product->product_details == 'TO BE DEFINED' || $product->product_price == 0 || $product->product_price == 0.00 ? 'undefined' : 'defined' }}">
+                        <td class="px-2 py-1 border-b">{{ $product->product_id }}</td>
+                        <td class="px-2 py-1 border-b">{{ $product->product_name }}</td>
+                        <td class="px-2 py-1 border-b">
+                            <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="w-12 h-12 object-cover">
+                        </td>
+                        <td class="px-2 py-1 border-b">{{ $product->created_at }}</td>
+                        <td class="border px-1 py-1">
+                            <span id="status-{{ $product->product_id }}">{{ $product->product_status }}</span>
+                            <button 
+                                class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
+                                onclick="openSetStatusModal({{ $product->product_id }}, '{{ $product->product_status }}')"
+                            >
+                                Edit
+                            </button>
+                        </td>
 
-
-
-    <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4">Add Budget</h1>
-        <form action="{{ route('budget.store') }}" method="POST" id="budget-form">
-            @csrf 
-            <div class="mb-4">
-                <label for="input_budget" class="block text-sm font-medium text-gray-700">Input Budget:</label>
-                <input 
-                    type="text" 
-                    id="input_budget" 
-                    name="input_budget" 
-                    placeholder="Input budget here in pesos" 
-                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                />
-            </div>
-
-            <div class="mb-4">
-                <label for="product_to_buy" class="block text-sm font-medium text-gray-700">Product Name to Buy:</label>
-                <input 
-                    type="text" 
-                    id="product_to_buy" 
-                    name="product_to_buy"  
-                    placeholder="Enter product name to buy" 
-                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                />
-            </div>
-
-            <div class="mb-4">
-                <label for="reference_code" class="block text-sm font-medium text-gray-700">Budget Identifier:</label>
-                <input 
-                    type="text" 
-                    id="reference_code" 
-                    name="reference_code" 
-                    placeholder="e.g., AB12" 
-                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                />
-            </div>
-
-            <button type="submit" class="mt-2 bg-green-500 text-white rounded-md p-2">Confirm Budget</button>
-        </form>
+                        <td class="px-2 py-1 border-b">
+                            @if ($product->product_details == 'TO BE DEFINED' || $product->product_price == 0 || $product->product_price == 0.00)
+                                <span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need action</span>
+                            @endif
+                            <a href="{{ route('product.details', $product->product_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300 mt-2 heartbeat-animation">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
-    <div id="add-product-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4">Add Product</h1>
-        <form id="add-product-form" action="/product/store" method="POST">
-        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+    <!-- Modal for setting status -->
+    <div id="set-status-modal" class="fixed inset-0 bg-gray-900 bg-opacity-10 flex justify-center items-start pt-20 hidden">
+        <div class="bg-white p-5 rounded-lg shadow-md w-1/3">
+            <h2 class="text-xl font-bold mb-4">Update Product Status</h2>
+            <form action="{{ route('product.updateStatus', '') }}" method="POST" id="status-form">
+                @csrf
+                @method('PUT')
+                <!-- Hidden input to store product_id -->
+                <input type="hidden" name="product_id" id="modal-product-id">
+                
+                <div class="mb-4">
+                    <label for="product_status" class="block text-sm font-medium text-gray-700">Product Status</label>
+                    <select name="product_status" id="modal-product-status" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="In Stock">In Stock</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Ordered">Ordered</option>
+                        <option value="PENDING">PENDING</option>
+                    </select>
+                </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Budget Inputted:</label>
-            <h3 id="input-budget" class="mt-1 text-sm text-gray-800">₱0.00</h3>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Save</button>
+                    <button type="button" onclick="closeSetStatusModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
+                </div>
+            </form>
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Remaining Balance:</label>
-            <span id="updated-remaining-balance-display" class="block mt-1 text-sm text-gray-800">₱0.00</span>
+    </div>
+
+    <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
+            <h1 class="text-xl font-bold mb-4">Add Budget</h1>
+            <form action="{{ route('budget.store') }}" method="POST" id="budget-form">
+                @csrf 
+                <div class="mb-4">
+                    <label for="input_budget" class="block text-sm font-medium text-gray-700">Input Budget:</label>
+                    <input 
+                        type="text" 
+                        id="input_budget" 
+                        name="input_budget" 
+                        placeholder="Input budget here in pesos" 
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label for="product_to_buy" class="block text-sm font-medium text-gray-700">Product Name to Buy:</label>
+                    <input 
+                        type="text" 
+                        id="product_to_buy" 
+                        name="product_to_buy"  
+                        placeholder="Enter product name to buy" 
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label for="reference_code" class="block text-sm font-medium text-gray-700">Budget Identifier:</label>
+                    <input 
+                        type="text" 
+                        id="reference_code" 
+                        name="reference_code" 
+                        placeholder="e.g., AB12" 
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
+                    />
+                </div>
+
+                <button type="submit" class="mt-2 bg-green-500 text-white rounded-md p-2">Confirm Budget</button>
+            </form>
         </div>
 
-        <div class="mb-4 grid grid-cols-2 gap-4">
+        <div id="add-product-section" class="section hidden bg-white rounded-lg shadow-md p-5">
+            <h1 class="text-xl font-bold mb-4">Add Product</h1>
+            <form id="add-product-form" action="/product/store" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Budget Inputted:</label>
+                <h3 id="input-budget" class="mt-1 text-sm text-gray-800">₱0.00</h3>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Remaining Balance:</label>
+                <span id="updated-remaining-balance-display" class="block mt-1 text-sm text-gray-800">₱0.00</span>
+            </div>
+
+            <div class="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                    <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
+                    <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
+                        <option value="" disabled selected>Select a budget identifier</option>
+                        @foreach ($budgets as $budget)
+                            @if ($budget->budget_status === 'PENDING')
+                                <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">
+                                    {{ $budget->id }} - {{ $budget->product_to_buy }}
+                                </option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+
+
+
+                <div>
+                    <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
+                    <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
+                        <option value="" disabled selected>Select a product</option>
+                    </select>
+                </div>
+        </div>
+
+            <div class="mb-4 grid grid-cols-2 gap-4">
             <div>
-                <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
-                <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
-                    <option value="" disabled selected>Select a budget identifier</option>
-                    @foreach ($budgets as $budget)
-                        <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">{{ $budget->id }}</option>
+                <label for="product-id-selector" class="block text-sm font-medium text-gray-700">Select Product ID:</label>
+                <select id="product-id-selector" name="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
+                    <!-- Default option with value 0 -->
+                    <option value="0" selected>0 - Temporary Option</option>
+                    
+                    <!-- Dynamically populated product options -->
+                    @foreach ($productIds as $product)
+                        <option value="{{ $product->product_id }}">
+                            {{ $product->product_id }} - {{ $product->product_name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
-
-            <div>
-                <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
-                <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
-                    <option value="" disabled selected>Select a product</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="mb-4 grid grid-cols-2 gap-4">
-        <div>
-            <label for="product-id-selector" class="block text-sm font-medium text-gray-700">Select Product ID:</label>
-            <select id="product-id-selector" name="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
-                <!-- Default option with value 0 -->
-                <option value="0" selected>0 - Temporary Option</option>
-                
-                <!-- Dynamically populated product options -->
-                @foreach ($productIds as $product)
-                    <option value="{{ $product->product_id }}">
-                        {{ $product->product_id }} - {{ $product->product_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
     </div>
-
+   
     <div class="mb-4 grid grid-cols-3 gap-4">
             <div>
                 <label for="unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost:</label>
@@ -221,64 +268,13 @@
     </div>
 
     <div id="add-product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4">Budget Details</h1>
-
-        <button 
-            onclick="location.reload()" 
-            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300 mb-4">
-            Refresh
-        </button>
-
-        <div class="mt-4">
-            <input 
-                type="text" 
-                placeholder="Search by Budget ID..." 
-                class="border rounded-lg px-3 py-2 w-full lg:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                id="searchBudget"
-                onkeyup="searchBudgets()"
-            />
-        </div>
-
-        <div class="overflow-y-auto h-200">
-            <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border px-1 py-1">Budget ID</th> <!-- Reduced padding -->
-                        <th class="border px-1 py-1">Balance</th> <!-- Reduced padding -->
-                        <th class="border px-1 py-1">Product To Buy</th> <!-- Reduced padding -->
-                        <th class="border px-1 py-1">Action</th> <!-- Reduced padding -->
-                    </tr>
-                </thead>
-                <tbody id="budgetTableBody">
-                    @php
-                        $totalBalance = 0; // Initialize total balance variable
-                    @endphp
-                    @foreach ($budgets as $budget)
-                        <!-- Check if the remaining_balance is zero (Budget not used yet) -->
-                        @if($budget->remaining_balance == 0)
-                            <tr>
-                                <td class="border px-1 py-1">{{ $budget->id }}</td> <!-- Reduced padding -->
-                                <td class="border px-1 py-1">
-                                    <span class="text-red-500 font-semibold">Budget not used yet</span>
-                                </td>
-                                <td class="border px-1 py-1">{{ $budget->product_to_buy }}</td> <!-- Product To Buy -->
-                                <td class="border px-1 py-1">
-                                    <button 
-                                        onclick="openModal({{ json_encode($budget) }})" 
-                                        class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
-                                        View
-                                    </button>
-                                </td>
-                            </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        
-
         <h1 class="text-xl font-bold mb-4 mt-10">Add Product Details for Restocking</h1>
+        
+        <!-- Message about PENDING budget status -->
+        <div class="bg-red-500 text-white text-sm font-semibold py-2 px-4 rounded mb-4">
+            <span class="mr-2">❗</span> Only new added budget with status PENDING can be used for adding.
+        </div>
+
         <form action="{{ route('product.addRestockDetails') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
@@ -305,11 +301,12 @@
                 <div class="mt-4 mb-4">
                     <label for="product_status" class="block text-sm font-medium text-gray-700">Product Status</label>
                     <select id="product_status" name="product_status" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="Ordered">Ordered</option>
+                        <option value="TO BE ADDED">To Be Added</option>
+                        <!-- <option value="Ordered">Ordered</option>
                         <option value="Back-Ordered">Back-Ordered</option>
                         <option value="In Stock">In Stock</option>
                         <option value="Not Available">Not Available</option>
-                        <option value="Out of Stock">Out of Stock</option>
+                        <option value="Out of Stock">Out of Stock</option> -->
                     </select>
                 </div>
 
@@ -320,7 +317,6 @@
             </button>
         </form>
     </div>
-
 
     @if(session('success'))
         <script>
@@ -353,60 +349,49 @@
             Refresh
         </button>
 
-        <div class="mt-4">
-            <input 
-                type="text" 
-                placeholder="Search by Budget ID..." 
-                class="border rounded-lg px-3 py-2 w-full lg:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                id="searchBudget"
-                onkeyup="searchBudgets()"
-            />
-        </div>
-
-    <div class="overflow-y-auto h-200">
-        <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border px-1 py-1">Budget ID</th> <!-- Reduced padding -->
-                    <th class="border px-1 py-1">Balance</th> <!-- Reduced padding -->
-                    <th class="border px-1 py-1">Action</th> <!-- Reduced padding -->
-                </tr>
-            </thead>
-            <tbody id="budgetTableBody">
-                @php
-                    $totalBalance = 0; // Initialize total balance variable
-                @endphp
-                @foreach ($budgets as $budget)
-                    <tr>
-                        <td class="border px-1 py-1">{{ $budget->id }}</td> <!-- Reduced padding -->
-                        <td class="border px-1 py-1">
-                            @if($budget->remaining_balance == 0)
-                                <span class="text-red-500 font-semibold">Budget not used yet</span>
-                            @else
-                                ₱{{ number_format($budget->remaining_balance, 2) }}
-                                @php
-                                    $totalBalance += $budget->remaining_balance; // Add to total balance
-                                @endphp
-                            @endif
-                        </td>
-                        <td class="border px-1 py-1">
-                            <button 
-                                onclick="openModal({{ json_encode($budget) }})" 
-                                class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
-                                View
-                            </button>
-                        </td>
+        <div class="overflow-y-auto h-200">
+            <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border px-1 py-1">Budget ID</th>
+                        <th class="border px-1 py-1">Balance</th>
+                        <th class="border px-1 py-1">Status</th>
+                        <th class="border px-1 py-1">Action</th> 
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <!-- <div class="mt-4">
-            <h2 class="text-lg font-semibold">Total Remaining Balance: ₱{{ number_format($totalBalance, 2) }}</h2>
-        </div> -->
-    </div>
+                </thead>
+                <tbody id="budgetTableBody">
+                    @php
+                        $totalBalance = 0; // Initialize total balance variable
+                    @endphp
+                    @foreach ($budgets as $budget)
+                        <tr>
+                            <td class="border px-1 py-1">{{ $budget->id }}</td> 
+                            <td class="border px-1 py-1">
+                                @if($budget->remaining_balance == 0)
+                                    <span class="text-red-500 font-semibold">Budget not used yet</span>
+                                @else
+                                    ₱{{ number_format($budget->remaining_balance, 2) }}
+                                    @php
+                                        $totalBalance += $budget->remaining_balance; // Add to total balance
+                                    @endphp
+                                @endif
+                            </td>
+                            <td class="border px-1 py-1">{{ $budget->budget_status }}</td> 
+                            <td class="border px-1 py-1">
+                                <button 
+                                    onclick="openModal({{ json_encode($budget) }})" 
+                                    class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 
-        
+    
     <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-3 mb-5">
         <h1 class="text-xl font-bold mb-4">Inventory</h1>
         <div class="flex justify-between mb-4">
@@ -486,7 +471,7 @@
                                 <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
                                 <button 
                                     class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
-                                    onclick="openSetStatusModal({{ $inventory->id }}, '{{ $inventory->set_status }}')"
+                                    onclick="openSetStatusModalForInventory({{ $inventory->id }}, '{{ $inventory->set_status }}')"
                                 >
                                     Edit
                                 </button>
@@ -528,7 +513,7 @@
             </div>
     </div>
 
-    <div id="set-status-modal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+    <div id="set-status-modal-for-inventory" class="hidden fixed inset-0 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg shadow-md p-5">
                 <h2 class="text-lg font-bold mb-4">Edit Set Status</h2>
                 <select id="status-select" class="block w-full border border-gray-300 rounded-md p-2 mb-4">
@@ -540,7 +525,7 @@
                 </select>
                 <div class="flex justify-end">
                     <button id="save-status-button" class="bg-blue-500 text-white rounded-md px-4 py-2" onclick="saveStatus()">Save</button>
-                    <button class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" onclick="closeSetStatusModal()">Cancel</button>
+                    <button class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" onclick="closeSetStatusModalForInventory()">Cancel</button>
                 </div>
             </div>
         </div>
@@ -595,93 +580,96 @@
         </div>
     </div>
 
-    <script>
-        let selectedBudgetIdentifier;
-
-        function openRemarksModal(budgetIdentifier) {
-            selectedBudgetIdentifier = budgetIdentifier;
-            document.getElementById('remarks-input').value = ''; // Clear input for adding remarks
-            document.getElementById('remarks-modal').classList.remove('hidden');
-        }
-
-        function openEditRemarksModal(budgetIdentifier, existingRemarks) {
-            selectedBudgetIdentifier = budgetIdentifier;
-            document.getElementById('remarks-input').value = existingRemarks; // Set existing remarks
-            document.getElementById('remarks-modal').classList.remove('hidden');
-        }
-
-        function closeRemarksModal() {
-            document.getElementById('remarks-modal').classList.add('hidden');
-            document.getElementById('remarks-input').value = ''; // Clear the input
-        }
-
-        function saveRemarks() {
-            const remarks = document.getElementById('remarks-input').value;
-
-            if (!remarks) {
-                alert('Please enter remarks.');
-                return;
-            }
-
-            // AJAX request to save the remarks in the database
-            fetch(`/inventory/${selectedBudgetIdentifier}/remarks`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Add CSRF token
-                },
-                body: JSON.stringify({ remarks })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update the table with the new remarks
-                    updateRemarksInTable(selectedBudgetIdentifier, remarks);
-                    closeRemarksModal();
-                } else {
-                    alert('Error saving remarks.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function updateRemarksInTable(budgetIdentifier, remarks) {
-            // Find the correct row in the inventory table and update the remarks cell
-            const rows = document.querySelectorAll('#inventory-table tbody tr');
-            rows.forEach(row => {
-                const budgetIdCell = row.querySelector('td:first-child');
-                if (budgetIdCell.textContent.trim() === budgetIdentifier) {
-                    const remarksCell = row.querySelector('td:last-child'); // Assuming remarks is the last cell
-                    remarksCell.querySelector('span').textContent = remarks; // Update remarks
-                }
-            });
-        }
-
-        function openViewRemarksModal(remarks) {
-            document.getElementById('view-remarks-text').textContent = remarks; // Set the remarks in the modal
-            document.getElementById('view-remarks-modal').classList.remove('hidden'); // Show the modal
-        }
-
-        function closeViewRemarksModal() {
-            document.getElementById('view-remarks-modal').classList.add('hidden'); // Hide the modal
-        }
-    </script>
+    <script src="{{ asset('js/purchasing-officer/add-product-details-alert.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/product-details-alert.js') }}"></script>
 
     @include('components.budget-modal')
     @endsection
 
-    <script src="{{ asset('js/alert-stocks.js') }}"></script> 
-    <script src="{{ asset('js/inventory.js') }}"></script> 
-    <script src="{{ asset('js/product.js') }}"></script>
-    <script src="{{ asset('js/selection.js') }}"></script>
-    <script src="{{ asset('js/calculationproduct.js') }}"></script>
-    <script src="{{ asset('js/calculation.js') }}"></script>
-    <script src="{{ asset('js/budgetjs.js') }}"></script>
-    <script src="{{ asset('js/nof.js') }}"></script> 
-    <script src="{{ asset('js/form-data.js') }}"></script> 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('js/purchasing-officer/alert-stocks.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/inventory.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/product.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/selection.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/calculationproduct.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/calculation.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/budgetjs.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/nof.js') }}"></script>
+    <script src="{{ asset('js/purchasing-officer/form-data.js') }}"></script>
 
 
+    <script>
+                    let selectedBudgetIdentifier;
+
+            function openRemarksModal(budgetIdentifier) {
+                selectedBudgetIdentifier = budgetIdentifier;
+                document.getElementById('remarks-input').value = ''; // Clear input for adding remarks
+                document.getElementById('remarks-modal').classList.remove('hidden');
+            }
+
+            function openEditRemarksModal(budgetIdentifier, existingRemarks) {
+                selectedBudgetIdentifier = budgetIdentifier;
+                document.getElementById('remarks-input').value = existingRemarks; // Set existing remarks
+                document.getElementById('remarks-modal').classList.remove('hidden');
+            }
+
+            function closeRemarksModal() {
+                document.getElementById('remarks-modal').classList.add('hidden');
+                document.getElementById('remarks-input').value = ''; // Clear the input
+            }
+
+            function saveRemarks() {
+                const remarks = document.getElementById('remarks-input').value;
+
+                if (!remarks) {
+                    alert('Please enter remarks.');
+                    return;
+                }
+
+                // AJAX request to save the remarks in the database
+                fetch(`/inventory/${selectedBudgetIdentifier}/remarks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Add CSRF token
+                    },
+                    body: JSON.stringify({ remarks })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the table with the new remarks
+                        updateRemarksInTable(selectedBudgetIdentifier, remarks);
+                        closeRemarksModal();
+                        alert('Remarks saved successfully!'); // Notify user
+                    } else {
+                        alert('Error saving remarks.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function updateRemarksInTable(budgetIdentifier, remarks) {
+                // Find the correct row in the inventory table and update the remarks cell
+                const rows = document.querySelectorAll('#inventory-table tbody tr');
+                rows.forEach(row => {
+                    const budgetIdCell = row.querySelector('td:first-child');
+                    if (budgetIdCell.textContent.trim() === budgetIdentifier) {
+                        const remarksCell = row.querySelector('td:last-child'); // Assuming remarks is the last cell
+                        remarksCell.querySelector('span').textContent = remarks; // Update remarks
+                    }
+                });
+            }
+
+            function openViewRemarksModal(remarks) {
+                document.getElementById('view-remarks-text').textContent = remarks; // Set the remarks in the modal
+                document.getElementById('view-remarks-modal').classList.remove('hidden'); // Show the modal
+            }
+
+            function closeViewRemarksModal() {
+                document.getElementById('view-remarks-modal').classList.add('hidden'); // Hide the modal
+            }
+
+    </script>
     <script>
      const budgetStoreRoute = "{{ route('budget.store') }}";
     </script>

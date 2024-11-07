@@ -37,7 +37,10 @@ Route::get('/stock-procurement', function () {
     // Fetch all product IDs from the products table
     $productIds = \App\Models\Product::select('product_id', 'product_name')->get();
 
-    $productNames = \App\Models\Budget::select('product_to_buy')->distinct()->get();
+    $productNames = \App\Models\Budget::select('product_to_buy')
+    ->where('budget_status', 'PENDING')
+    ->distinct()
+    ->get();
 
 
     // Pass the data to the view
@@ -90,3 +93,5 @@ Route::get('/product-details/{product_id}', function ($product_id) {
     // Pass product data to the view
     return view('dashboard-components.product-details', compact('product'));
 })->name('product.details');
+
+Route::put('/product/update-status/{product_id}', [ProductController::class, 'updateStatus'])->name('product.updateStatus');
