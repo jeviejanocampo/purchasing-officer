@@ -17,16 +17,14 @@
     </button>
 
     <!-- Title Section -->
-    <h1 class="text-3xl mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 200; color: #C96A2A;">
-        TinioFoods Inventory and Budget Summary Report
-    </h1>
+    <h1 class="text-3xl font-bold mb-4">TinioFoods Inventory and Budget Summary Report</h1>
     <p class="mb-2"><strong>Company Name:</strong> MS Tinio Food Products Trading</p>
     <p class="mb-2"><strong>Address:</strong> 967 Highway Mangnao, Dumaguete City 6200, Lamberto Macias Road, Dumaguete, Negros Oriental</p>
     <p class="mb-4"><strong>Phone:</strong> (035) 225 7840</p>
 
     <!-- Inventory Details Section -->
     <div class="p-4 mb-6">
-        <h2 class="text-lg font-bold mb-3">Product Purchased</h2>
+        <h2 class="text-lg font-bold mb-3">Inventory Details</h2>
         <table class="table-auto w-full border-collapse">
             <thead>
                 <tr>
@@ -87,52 +85,13 @@
                     <td class="py-2">₱<span id="total-cost-pieces"></span> x {{ $inventory->stocks_per_set }} = ₱<span id="total-cost-stocks"></span></td>
                 </tr>
                 <tr>
-                    <td class="py-1">Unit Cost of Single Product X Pieces Per Set = Stocks Per Set X Unit Cost per Set - Inputted Budget</td>
-                    <td class="py-1">Remaining Balance</td>
-                </tr>
-                <tr>
                     <td class="py-2">Remaining Balance Calculation</td>
                     <td class="py-2">₱<span id="input-budget"></span> - ₱<span id="total-cost-stocks"></span> = ₱<span id="remaining-balance"></span></td>
                 </tr>
             </tbody>
         </table>
     </div>
-
-    <div class="border rounded-lg p-4 mb-6 mt-12">
-        <h2 class="text-lg font-bold mb-3">Cost Breakdown</h2>
-        <table class="w-full text-left border-t border-b">
-            <thead>
-                <tr class="border-b bg-gray-100">
-                    <th class="py-2">Words</th>
-                    <th class="py-2">Number</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="py-2">Unit Cost per Set</td>
-                    <td class="py-2">₱<span id="unit-cost-per-set-breakdown"></span></td>
-                </tr>
-                <tr>
-                    <td class="py-2">Total Cost of Pieces per Set</td>
-                    <td class="py-2">₱<span id="total-cost-pieces-breakdown"></span></td>
-                </tr>
-                <tr>
-                    <td class="py-2">Budget</td>
-                    <td class="py-2">₱<span id="budget-breakdown"></span></td>
-                </tr>
-                <tr>
-                    <td class="py-2">Total Cost of Sets</td>
-                    <td class="py-2">₱<span id="total-cost-sets-breakdown"></span></td>
-                </tr>
-                <tr>
-                    <td class="py-2">Remaining Balance</td>
-                    <td class="py-2">₱<span id="remaining-balance-breakdown"></span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-
+    
     <h3 class="text-lg  mt-6 text-center">FOR THE OWNER</h3>
     <h3 class="text-lg  mt-2 text-center">Record By the Purchasing Officer</h3>
 
@@ -141,7 +100,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
     .font-roboto {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Roboto', sans-serif;
     }
     @media print {
         .sidebar, header, .print-button, a.inline-block {
@@ -154,7 +113,7 @@
     }
 </style>
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         const budgetId = {{ $inventory->budget_identifier }};
         fetchBudgetDetails(budgetId);
@@ -183,6 +142,7 @@
                     const unitCostPerSet = (unitCost * piecesPerSet).toFixed(2);
                     const totalCostStocks = (unitCostPerSet * stocksPerSet).toFixed(2);
                     const remainingBalance = (inputBudget - totalCostStocks).toFixed(2);
+                    const finalCalculation = (totalCostStocks - inputBudget).toFixed(2);
 
                     document.getElementById('unit-cost-per-set').innerText = unitCostPerSet;
                     document.getElementById('total-cost-pieces').innerText = unitCostPerSet;
@@ -190,13 +150,7 @@
                     document.getElementById('total-cost-stocks').innerText = totalCostStocks;
                     document.getElementById('input-budget').innerText = inputBudget.toFixed(2);
                     document.getElementById('remaining-balance').innerText = remainingBalance;
-
-                    // Update Cost Breakdown
-                    document.getElementById('unit-cost-per-set-breakdown').innerText = unitCostPerSet;
-                    document.getElementById('total-cost-pieces-breakdown').innerText = unitCostPerSet;
-                    document.getElementById('budget-breakdown').innerText = inputBudget.toFixed(2); // Display the input budget
-                    document.getElementById('total-cost-sets-breakdown').innerText = totalCostStocks;
-                    document.getElementById('remaining-balance-breakdown').innerText = remainingBalance;
+                    document.getElementById('final-calculation').innerText = finalCalculation;
                 } else {
                     alert(data.message);
                 }
@@ -205,6 +159,8 @@
                 console.error('Error fetching budget details:', error);
             });
     }
-
-    </script>
+</script>
 @endsection
+
+ <td class="py-1">Unit Cost of Single Product X Pieces Per Set = Stocks Per Set X Unit Cost per Set - Inputted Budget</td>
+                    <td class="py-1">Remaining Balance</td>

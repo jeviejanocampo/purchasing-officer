@@ -52,7 +52,7 @@ function updateInventoryTable(inventories) {
                     <a 
                         href="/inventory/${inventory.id}" 
                         class="bg-blue-500 text-white rounded-md px-2 py-1 text-sm hover:bg-blue-600 transition duration-200">
-                        View Details
+                        Generate Summary Report
                     </a>
                 </td>
             </tr>`

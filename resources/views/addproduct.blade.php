@@ -106,7 +106,7 @@
     @include('po-contents.modals-section    ')
 
     <script>
-            (function() {
+                    (function() {
             // Flag to ensure the polling happens only once
             let hasPolled = false; // Change from isPollingActive to hasPolled
 
@@ -126,7 +126,8 @@
                                 <td class="px-2 py-1 border-b">${product.product_id}</td>
                                 <td class="px-2 py-1 border-b">${product.product_name}</td>
                                 <td class="px-2 py-1 border-b">
-                                    <img src="{{ asset('storage/') }}/${product.product_image}" alt="${product.product_name}" class="w-12 h-12 object-cover">
+                                    <!-- Correct image URL path based on product_image value -->
+                                    <img src="/storage/product-images/${product.product_image}" alt="${product.product_name}" class="w-20 h-18 object-cover">
                                 </td>
                                 <td class="px-2 py-1 border-b">${product.created_at}</td>
                                 <td class="border px-1 py-1">
@@ -140,13 +141,14 @@
                                 </td>
                                 <td class="px-2 py-1 border-b">
                                     ${product.product_details == 'TO BE DEFINED' || product.product_price == 0 || product.product_price == 0.00
-                                        ? '<span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need action</span>'
+                                        ? '<span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need actions</span>'
                                         : ''}
                                     <a href="{{ route('product.details', '') }}/${product.product_id}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300 mt-2 heartbeat-animation">
                                         Edit
                                     </a>
                                 </td>
                             `;
+
                             tableBody.appendChild(row);
                         });
                     })

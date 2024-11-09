@@ -48,7 +48,7 @@
         <!-- Product Image -->
         <div>
             <label class="font-medium text-gray-700">Product Image</label>
-            <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="w-32 h-32 object-cover">
+            <img src="{{ asset('storage/product-images/' . $product->product_image) }}" alt="{{ $product->product_name }}" id="current-product-image" class="w-32 h-32 object-cover">
             <input type="file" name="product_image" id="edit-product-image" class="hidden mt-1 p-2 border rounded">
         </div>
 

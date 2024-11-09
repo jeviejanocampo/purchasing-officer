@@ -58,7 +58,7 @@
         $user = \App\Models\User::find($userId); 
     @endphp
 
-    <aside class="sidebar text-white w-full lg:w-64 lg:fixed lg:inset-y-0 lg:left-0 p-4 lg:p-6 lg:text-lg">
+    <aside class="sidebar text-white w-full lg:w-56 lg:fixed lg:inset-y-0 lg:left-0 p-4 lg:p-6 lg:text-lg">
         <div class="text-center mb-6">
             <img src="{{ asset('images/purchasing-officer.png') }}" alt="Profile Image" class="w-14 h-14 rounded-full mx-auto mb-2"> 
             <div class="font-semibold">{{ $user->name ?? 'Guest' }}</div>
@@ -83,9 +83,9 @@
         </nav>
     </aside>
 
-    <main class="pt-20 p-6 flex-1 lg:ml-64">
+    <main class="pt-20 p-6 flex-1 lg:ml-56">
         <!-- Sticky Header with shadow and Notifications text on top-left -->
-        <header class="bg-white shadow-md fixed top-0 left-0 right-0 p-4 z-0 lg:ml-64 flex items-center h-12 no-print">
+        <header class="bg-white shadow-md fixed top-0 left-0 right-0 p-4 z-0 lg:ml-56 flex items-center h-12 no-print">
             <h1 class="text-xl font-semibold text-gray-800"></h1>
             <!-- Notification Bar Icon on the Top Right -->
             <a href="#" onclick="event.preventDefault(); showNotificationModal();" class="notification-bar">

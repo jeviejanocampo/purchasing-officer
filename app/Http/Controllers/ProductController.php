@@ -122,21 +122,28 @@ class ProductController extends Controller
             'product_name' => 'required|string|max:255',
             'product_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'product_status' => 'required|string|in:TO BE ADDED',
+            'image_name' => 'nullable|string|max:255', // Optional image name
         ]);
-    
+
         try {
+            // Retrieve the uploaded image file
             $image = $request->file('product_image');
             $filename = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
-            $filename = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
-            $imageName = $filename . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('', $imageName); // Store the image in default location
-    
+
+            // Use the user-provided image name, or default to a sanitized version of the original filename
+            $newImageName = $request->image_name ?: preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
+            $newImageName .= '.' . $image->getClientOriginalExtension(); // Add file extension
+
+            // Store image in the 'public/product-images' directory with the new name
+            $image->storeAs('public/product-images', $newImageName);
+
+            // Store product details in the database
             Product::create([
                 'product_name' => $request->product_name,
-                'product_image' => $imageName,
+                'product_image' => $newImageName, // Save the new image name in the database
                 'product_status' => $request->product_status,
             ]);
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Product added successfully.',
@@ -148,6 +155,8 @@ class ProductController extends Controller
             ]);
         }
     }
+
+    
 
     public function showProductDetails()
     {
@@ -280,10 +289,9 @@ class ProductController extends Controller
 
     public function getUpdatedProducts()
     {
-        $products = Product::all(); // Or apply any necessary filters or pagination
+        // Fetch products ordered by the 'created_at' column in descending order
+        $products = Product::orderBy('created_at', 'desc')->get();
         return response()->json($products);
     }
-
-
 
 }

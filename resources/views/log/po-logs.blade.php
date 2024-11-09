@@ -14,13 +14,21 @@
     <div class="container mx-auto p-5">
         <h1 class="text-3xl font-bold mb-4">Purchase Officer Logs</h1>
 
-        <!-- Search bar and date filter section -->
+        <!-- Search bar, date filter, and category filter section -->
         <div class="mb-5 flex justify-between items-center">
             <input type="text" id="search-input" placeholder="Search logs..." class="p-2 border border-gray-300 rounded-md shadow-sm">
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 items-center">
                 <input type="date" id="start-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
                 <input type="date" id="end-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
+                <select id="category-filter" class="p-2 bg-white border border-gray-300 rounded-md shadow-sm">
+                    <option value="">Select Category</option>
+                    <option value="Budget Management" data-keywords="Budget created,remaining_balance,available_budget">Budget Management</option>
+                    <option value="Inventory Management" data-keywords="Creating inventory item,product_name,total_cost">Inventory Management</option>
+                    <option value="Product Addition and Update" data-keywords="Product added,Product added and budget updated">Product Addition and Update</option>
+                    <option value="Error or Success Messages" data-keywords="Error,Success,Failure,Completed">Error or Success Messages</option>
+                </select>
                 <button id="clear-button" class="p-2 bg-gray-500 text-white rounded-md shadow-sm">Clear</button>
+                <button id="show-all-button" class="p-2 bg-gray-700 text-white rounded-md shadow-sm">Show All</button>
             </div>
         </div>
 
@@ -61,6 +69,32 @@
 
 <!-- Separate JavaScript file -->
 <script src="{{ asset('js/po-logs.js') }}"></script>
+
+<!-- Inline JavaScript for filtering logic -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Filter logs by category keywords
+        document.getElementById("category-filter").addEventListener("change", function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const keywords = selectedOption.getAttribute("data-keywords") ? selectedOption.getAttribute("data-keywords").split(",") : [];
+            filterLogs(keywords);
+        });
+
+        // Show all logs
+        document.getElementById("show-all-button").addEventListener("click", function() {
+            document.querySelectorAll(".log-row").forEach(row => row.style.display = "table-row");
+        });
+
+        // Filter logs based on keywords
+        function filterLogs(keywords) {
+            document.querySelectorAll(".log-row").forEach(row => {
+                const logData = row.querySelector("td:nth-child(2)").innerText;
+                const match = keywords.some(keyword => logData.includes(keyword));
+                row.style.display = match ? "table-row" : "none";
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

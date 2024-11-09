@@ -54,7 +54,7 @@
                     <th class="border px-1 py-1">Expiration Date</th>
                     <th class="border px-1 py-1">Status</th> 
                     <th class="border px-1 py-1">Remarks</th> 
-                    <th class="border px-1 py-1">View Details</th> 
+                    <th class="border px-1 py-1">Actions</th> 
                 </tr>
             </thead>
             <tbody>
@@ -122,7 +122,7 @@
                             <a 
                                 href="{{ route('inventory.details', ['id' => $inventory->id]) }}" 
                                 class="bg-blue-700 text-white rounded-md px-1 py-1 hover:bg-blue-800 transition duration-200">
-                                View Details
+                                Generate Summary Report
                             </a>
                         </td>
                     </tr>
