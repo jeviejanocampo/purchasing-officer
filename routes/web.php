@@ -95,3 +95,9 @@ Route::get('/product-details/{product_id}', function ($product_id) {
 })->name('product.details');
 
 Route::put('/product/update-status/{product_id}', [ProductController::class, 'updateStatus'])->name('product.updateStatus');
+
+Route::get('/product/{productId}/inventory-data', [ProductController::class, 'fetchInventoryData']);
+
+Route::put('/product/{product_id}/update', [ProductController::class, 'update'])->name('product.update');
+
+Route::get('/products/update', [ProductController::class, 'getUpdatedProducts']);

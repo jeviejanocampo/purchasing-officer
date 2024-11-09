@@ -54,269 +54,28 @@
     <div class="mb-4">
         <label for="section-selector" class="block text-sm font-medium text-gray-700">Select Section</label>
         <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
-            <optgroup label="Restock Budget Management">
+                <optgroup label="Inventory Overview and Budget Details">
+                <option value="product-details">Product Details</option>
+                <option value="inventory" >Inventory</option>  
+                <option value="budget-allocation">Restocking Budget Allocation</option>
+            </optgroup>
+            <optgroup label="Restocking">
                 <option value="add-budget">Add Budget for Restocking</option>
             </optgroup>
-            <optgroup label="Product Management">
+            <optgroup label="Restocking and Product Entry">
             <option value="add-product-details">Add Product Details for Restocking</option> 
                 <option value="add-product">Add Product To The Inventory</option>
-            </optgroup>
-            <optgroup label="Inventory Management">
-                <option value="product-details">Product Details</option>
-                <option value="inventory" selected>Inventory</option>  
-                <option value="budget-allocation">Restocking Budget Allocation</option>
             </optgroup>
         </select>
     </div>
 
+    @include('po-contents.product-details-section')
 
-    <div id="product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4">Product Details</h1>
+    @include('po-contents.add-budget-section')
 
-        <table class="min-w-full table-auto text-sm">
-            <thead>
-                <tr>
-                    <th class="px-2 py-1 border-b">Product ID</th>
-                    <th class="px-2 py-1 border-b">Product Name</th>
-                    <th class="px-2 py-1 border-b">Product Image</th>
-                    <th class="px-2 py-1 border-b">Created At</th>
-                    <th class="px-2 py-1 border-b">Product Status</th>
-                    <th class="px-2 py-1 border-b">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($products as $product)
-                    <tr data-details-status="{{ $product->product_details == 'TO BE DEFINED' || $product->product_price == 0 || $product->product_price == 0.00 ? 'undefined' : 'defined' }}">
-                        <td class="px-2 py-1 border-b">{{ $product->product_id }}</td>
-                        <td class="px-2 py-1 border-b">{{ $product->product_name }}</td>
-                        <td class="px-2 py-1 border-b">
-                            <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="w-12 h-12 object-cover">
-                        </td>
-                        <td class="px-2 py-1 border-b">{{ $product->created_at }}</td>
-                        <td class="border px-1 py-1">
-                            <span id="status-{{ $product->product_id }}">{{ $product->product_status }}</span>
-                            <button 
-                                class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
-                                onclick="openSetStatusModal({{ $product->product_id }}, '{{ $product->product_status }}')"
-                            >
-                                Edit
-                            </button>
-                        </td>
+    @include('po-contents.add-product-section')
 
-                        <td class="px-2 py-1 border-b">
-                            @if ($product->product_details == 'TO BE DEFINED' || $product->product_price == 0 || $product->product_price == 0.00)
-                                <span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need action</span>
-                            @endif
-                            <a href="{{ route('product.details', $product->product_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300 mt-2 heartbeat-animation">
-                                Edit
-                            </a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Modal for setting status -->
-    <div id="set-status-modal" class="fixed inset-0 bg-gray-900 bg-opacity-10 flex justify-center items-start pt-20 hidden">
-        <div class="bg-white p-5 rounded-lg shadow-md w-1/3">
-            <h2 class="text-xl font-bold mb-4">Update Product Status</h2>
-            <form action="{{ route('product.updateStatus', '') }}" method="POST" id="status-form">
-                @csrf
-                @method('PUT')
-                <!-- Hidden input to store product_id -->
-                <input type="hidden" name="product_id" id="modal-product-id">
-                
-                <div class="mb-4">
-                    <label for="product_status" class="block text-sm font-medium text-gray-700">Product Status</label>
-                    <select name="product_status" id="modal-product-status" class="w-full p-2 border border-gray-300 rounded-md">
-                        <option value="In Stock">In Stock</option>
-                        <option value="Damaged">Damaged</option>
-                        <option value="Expired">Expired</option>
-                        <option value="Ordered">Ordered</option>
-                        <option value="PENDING">PENDING</option>
-                    </select>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Save</button>
-                    <button type="button" onclick="closeSetStatusModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="add-budget-section" class="section bg-white rounded-lg shadow-md p-5">
-            <h1 class="text-xl font-bold mb-4">Add Budget</h1>
-            <form action="{{ route('budget.store') }}" method="POST" id="budget-form">
-                @csrf 
-                <div class="mb-4">
-                    <label for="input_budget" class="block text-sm font-medium text-gray-700">Input Budget:</label>
-                    <input 
-                        type="text" 
-                        id="input_budget" 
-                        name="input_budget" 
-                        placeholder="Input budget here in pesos" 
-                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                    />
-                </div>
-
-                <div class="mb-4">
-                    <label for="product_to_buy" class="block text-sm font-medium text-gray-700">Product Name to Buy:</label>
-                    <input 
-                        type="text" 
-                        id="product_to_buy" 
-                        name="product_to_buy"  
-                        placeholder="Enter product name to buy" 
-                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                    />
-                </div>
-
-                <div class="mb-4">
-                    <label for="reference_code" class="block text-sm font-medium text-gray-700">Budget Identifier:</label>
-                    <input 
-                        type="text" 
-                        id="reference_code" 
-                        name="reference_code" 
-                        placeholder="e.g., AB12" 
-                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                    />
-                </div>
-
-                <button type="submit" class="mt-2 bg-green-500 text-white rounded-md p-2">Confirm Budget</button>
-            </form>
-        </div>
-
-        <div id="add-product-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-            <h1 class="text-xl font-bold mb-4">Add Product</h1>
-            <form id="add-product-form" action="/product/store" method="POST">
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Budget Inputted:</label>
-                <h3 id="input-budget" class="mt-1 text-sm text-gray-800">₱0.00</h3>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Remaining Balance:</label>
-                <span id="updated-remaining-balance-display" class="block mt-1 text-sm text-gray-800">₱0.00</span>
-            </div>
-
-            <div class="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                    <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
-                    <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
-                        <option value="" disabled selected>Select a budget identifier</option>
-                        @foreach ($budgets as $budget)
-                            @if ($budget->budget_status === 'PENDING')
-                                <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">
-                                    {{ $budget->id }} - {{ $budget->product_to_buy }}
-                                </option>
-                            @endif
-                        @endforeach
-                    </select>
-                </div>
-
-
-
-                <div>
-                    <label for="product-selector" class="block text-sm font-medium text-gray-700">Select Product to Buy:</label>
-                    <select id="product-selector" name="product_name" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
-                        <option value="" disabled selected>Select a product</option>
-                    </select>
-                </div>
-        </div>
-
-            <div class="mb-4 grid grid-cols-2 gap-4">
-            <div>
-                <label for="product-id-selector" class="block text-sm font-medium text-gray-700">Select Product ID:</label>
-                <select id="product-id-selector" name="product_id" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200">
-                    <!-- Default option with value 0 -->
-                    <option value="0" selected>0 - Temporary Option</option>
-                    
-                    <!-- Dynamically populated product options -->
-                    @foreach ($productIds as $product)
-                        <option value="{{ $product->product_id }}">
-                            {{ $product->product_id }} - {{ $product->product_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-    </div>
-   
-    <div class="mb-4 grid grid-cols-3 gap-4">
-            <div>
-                <label for="unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost:</label>
-                <input type="number" id="unit-cost" name="unit_cost" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="₱0.00" step="0.01" required onchange="calculateStocks()" onkeyup="calculateStocks()">
-            </div>
-            <div>
-                <label for="pieces-per-set" class="block text-sm font-medium text-gray-700">Pieces per Set:</label>
-                <input type="number" id="pieces-per-set" name="pieces_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required onchange="calculateStocks()" onkeyup="calculateStocks()">
-            </div>
-            <div>
-                <label for="stocks-per-set" class="block text-sm font-medium text-gray-700">Stocks per Set:</label>
-                <input type="number" id="stocks-per-set" name="stocks_per_set" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" placeholder="0" required>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <label for="expiration-date" class="block text-sm font-medium text-gray-700">Expiration Date:</label>
-                <input type="date" id="expiration-date" name="expiration_date" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" required>
-            </div>
-
-            <button type="submit" class="mt-4 bg-blue-500 text-white rounded-md p-2">Add Product</button>
-        </form>
-    </div>
-
-    <div id="add-product-details-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4 mt-10">Add Product Details for Restocking</h1>
-        
-        <!-- Message about PENDING budget status -->
-        <div class="bg-red-500 text-white text-sm font-semibold py-2 px-4 rounded mb-4">
-            <span class="mr-2">❗</span> Only new added budget with status PENDING can be used for adding.
-        </div>
-
-        <form action="{{ route('product.addRestockDetails') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-                <!-- Product Name -->
-                <div class="mt-4 mb-4">
-                    <label for="product_name" class="block text-sm font-medium text-gray-700">Product Name</label>
-                    <select id="product_name" name="product_name" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="">Select Product</option>
-                        @foreach($productNames as $product)
-                            <option value="{{ $product->product_to_buy }}">{{ $product->product_to_buy }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Product Image -->
-                <div class="mt-4 mb-4">
-                    <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
-                    <input type="file" id="product_image" name="product_image" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-
-                <!-- Product Status -->
-                <div class="mt-4 mb-4">
-                    <label for="product_status" class="block text-sm font-medium text-gray-700">Product Status</label>
-                    <select id="product_status" name="product_status" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="TO BE ADDED">To Be Added</option>
-                        <!-- <option value="Ordered">Ordered</option>
-                        <option value="Back-Ordered">Back-Ordered</option>
-                        <option value="In Stock">In Stock</option>
-                        <option value="Not Available">Not Available</option>
-                        <option value="Out of Stock">Out of Stock</option> -->
-                    </select>
-                </div>
-
-            </div>
-
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 mt-4">
-                Add Product
-            </button>
-        </form>
-    </div>
+    @include('po-contents.add-product-details-section')
 
     @if(session('success'))
         <script>
@@ -340,261 +99,101 @@
         </script>
     @endif
 
-    <div id="budget-allocation-section" class="section hidden bg-white rounded-lg shadow-md p-5">
-        <h1 class="text-xl font-bold mb-4">Budget Allocation Details for Product Purchase</h1>
+    @include('po-contents.add-budget-allocation')
 
-        <button 
-            onclick="location.reload()" 
-            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300 mb-4">
-            Refresh
-        </button>
+    @include('po-contents.inventory-section')
 
-        <div class="overflow-y-auto h-200">
-            <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm"> <!-- Reduced font size -->
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border px-1 py-1">Budget ID</th>
-                        <th class="border px-1 py-1">Balance</th>
-                        <th class="border px-1 py-1">Status</th>
-                        <th class="border px-1 py-1">Action</th> 
-                    </tr>
-                </thead>
-                <tbody id="budgetTableBody">
-                    @php
-                        $totalBalance = 0; // Initialize total balance variable
-                    @endphp
-                    @foreach ($budgets as $budget)
-                        <tr>
-                            <td class="border px-1 py-1">{{ $budget->id }}</td> 
-                            <td class="border px-1 py-1">
-                                @if($budget->remaining_balance == 0)
-                                    <span class="text-red-500 font-semibold">Budget not used yet</span>
-                                @else
-                                    ₱{{ number_format($budget->remaining_balance, 2) }}
-                                    @php
-                                        $totalBalance += $budget->remaining_balance; // Add to total balance
-                                    @endphp
-                                @endif
-                            </td>
-                            <td class="border px-1 py-1">{{ $budget->budget_status }}</td> 
-                            <td class="border px-1 py-1">
-                                <button 
-                                    onclick="openModal({{ json_encode($budget) }})" 
-                                    class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs"> <!-- Reduced button size -->
-                                    View
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
+    @include('po-contents.modals-section    ')
 
-    
-    <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-3 mb-5">
-        <h1 class="text-xl font-bold mb-4">Inventory</h1>
-        <div class="flex justify-between mb-4">
-            <div class="w-1/4">
-                <input 
-                    type="text" 
-                    id="budget-search" 
-                    placeholder="Search by Budget Identifier" 
-                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                    onkeyup="filterInventory()"
-                />
-            </div>
+    <script>
+            (function() {
+            // Flag to ensure the polling happens only once
+            let hasPolled = false; // Change from isPollingActive to hasPolled
 
-            <!-- Date Range Filter -->
-            <div class="w-1/4 flex space-x-2">
-                <input 
-                    type="date" 
-                    id="start-date-filter" 
-                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                    onchange="filterInventory()"
-                />
-                <input 
-                    type="date" 
-                    id="end-date-filter" 
-                    class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                    onchange="filterInventory()"
-                />
-            </div>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full border-collapse border border-gray-300 mt-4" id="inventory-table">
-                <thead>
-                    <tr>
-                        <th class="border px-1 py-1">Inventory ID</th>
-                        <th class="border px-1 py-1">Budget ID</th>
-                        <th class="border px-1 py-1">Product Name</th>
-                        <th class="border px-1 py-1">Unit Cost</th>
-                        <th class="border px-1 py-1">Pieces per Set</th>
-                        <th class="border px-1 py-1">Stocks per Set</th>
-                        <th class="border px-1 py-1">Created At</th>
-                        <th class="border px-1 py-1">Expiration Date</th>
-                        <th class="border px-1 py-1">Status</th> 
-                        <th class="border px-1 py-1">Remarks</th> 
-                        <th class="border px-1 py-1">View Details</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($inventories as $inventory)
-                        <tr>
-                            <td class="border px-1 py-1">{{ $inventory->id }}</td>
-                            <td class="border px-2 py-2 flex items-center">
-                                {{ $inventory->budget_identifier }}
-                                <button 
-                                    class="ml-2 bg-blue-500 text-white rounded-md px-2 py-1" 
-                                    onclick="fetchBudgetDetails({{ $inventory->budget_identifier }})"
-                                >
-                                    View
-                                </button>
-                            </td>
-                            <td class="border px-1 py-1">{{ $inventory->product_name }}</td>
-                            <td class="border px-1 py-1">₱{{ number_format($inventory->unit_cost, 2) }}</td>
-                            <td class="border px-1 py-1">{{ $inventory->pieces_per_set }}</td>
-                            <td class="border px-1 py-1 relative">
-                                {{ $inventory->stocks_per_set }}
-                                @if ($inventory->stocks_per_set <= 10)
-                                    <span class="absolute right-0 top-0 bg-red-800 text-white text-xs px-2 py-1 rounded-full stocks-low-animation">
-                                        Stocks Low
-                                    </span>
-                                @endif
-                                <script>
-                                    checkLowStock({{ $inventory->stocks_per_set }}, '{{ $inventory->product_name }}');
-                                </script>
-                            </td>
-                            <td class="border px-1 py-1">{{ $inventory->created_at }}</td>
-                            <td class="border px-1 py-1">{{ $inventory->exp_date }}</td>
-                            <td class="border px-1 py-1">
-                                <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
-                                <button 
-                                    class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
-                                    onclick="openSetStatusModalForInventory({{ $inventory->id }}, '{{ $inventory->set_status }}')"
-                                >
-                                    Edit
-                                </button>
-                            </td>
-                            <td class="border px-1 py-1">
-                                @if($inventory->remarks)
+            // Function to fetch the updated product list
+            function fetchUpdatedProducts() {
+                fetch('/products/update')
+                    .then(response => response.json())
+                    .then(data => {
+                        const tableBody = document.getElementById('product-body');
+                        tableBody.innerHTML = ''; // Clear existing rows
+
+                        data.forEach(product => {
+                            const row = document.createElement('tr');
+                            row.setAttribute('data-details-status', product.product_details == 'TO BE DEFINED' || product.product_price == 0 || product.product_price == 0.00 ? 'undefined' : 'defined');
+
+                            row.innerHTML = `
+                                <td class="px-2 py-1 border-b">${product.product_id}</td>
+                                <td class="px-2 py-1 border-b">${product.product_name}</td>
+                                <td class="px-2 py-1 border-b">
+                                    <img src="{{ asset('storage/') }}/${product.product_image}" alt="${product.product_name}" class="w-12 h-12 object-cover">
+                                </td>
+                                <td class="px-2 py-1 border-b">${product.created_at}</td>
+                                <td class="border px-1 py-1">
+                                    <span id="status-${product.product_id}">${product.product_status}</span>
                                     <button 
-                                        class="bg-blue-700 text-white rounded-md px-3 py-1 hover:bg-blue-800 transition duration-200" 
-                                        onclick="openViewRemarksModal('{{ $inventory->remarks }}')"
-                                    >
-                                        View
-                                    </button>
-                                    <button 
-                                        class="ml-2 bg-yellow-600 text-white rounded-md px-1 py-1 hover:bg-yellow-700" 
-                                        onclick="openEditRemarksModal('{{ $inventory->budget_identifier }}', '{{ $inventory->remarks }}')"
+                                        class="ml-2 bg-yellow-500 text-white rounded-md px-1 py-1" 
+                                        onclick="openSetStatusModal(${product.product_id}, '${product.product_status}')"
                                     >
                                         Edit
                                     </button>
-                                @else
-                                    <button 
-                                        class="ml-2 bg-green-600 text-white rounded-md px-1 py-1 hover:bg-green-700" 
-                                        onclick="openRemarksModal('{{ $inventory->budget_identifier }}')"
-                                    >
-                                        Add Remarks
-                                        </button>
-                                    @endif
                                 </td>
-                                <td class="border px-2 py-2">
-                                    <a 
-                                        href="{{ route('inventory.details', ['id' => $inventory->id]) }}" 
-                                        class="bg-blue-700 text-white rounded-md px-1 py-1 hover:bg-blue-800 transition duration-200">
-                                        View Details
+                                <td class="px-2 py-1 border-b">
+                                    ${product.product_details == 'TO BE DEFINED' || product.product_price == 0 || product.product_price == 0.00
+                                        ? '<span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need action</span>'
+                                        : ''}
+                                    <a href="{{ route('product.details', '') }}/${product.product_id}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300 mt-2 heartbeat-animation">
+                                        Edit
                                     </a>
                                 </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-    </div>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching product data:', error));
+            }
 
-    <div id="set-status-modal-for-inventory" class="hidden fixed inset-0 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg shadow-md p-5">
-                <h2 class="text-lg font-bold mb-4">Edit Set Status</h2>
-                <select id="status-select" class="block w-full border border-gray-300 rounded-md p-2 mb-4">
-                    <option value="In Stock">In Stock</option>
-                    <option value="On Order">On Order</option>
-                    <option value="Discontinued">Discontinued</option>
-                    <option value="Expired">Expired</option>
-                    <option value="Damaged">Damaged</option>
-                </select>
-                <div class="flex justify-end">
-                    <button id="save-status-button" class="bg-blue-500 text-white rounded-md px-4 py-2" onclick="saveStatus()">Save</button>
-                    <button class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" onclick="closeSetStatusModalForInventory()">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
+            // Function to trigger polling only once
+            function startPollingOnce() {
+                if (!hasPolled) {
+                    hasPolled = true; // Set flag to prevent further polling
+                    fetchUpdatedProducts(); // Fetch updated product data once
+                }
+            }
 
-    <div id="remarks-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-md p-5 w-1/3">
-            <h2 class="text-lg font-bold mb-4">Add/Edit Remarks</h2>
-            <textarea 
-                id="remarks-input" 
-                rows="4" 
-                class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" 
-                placeholder="Enter your remarks here..."
-            ></textarea>
-            <div class="flex justify-end mt-4">
-                <button 
-                    class="bg-blue-500 text-white rounded-md px-4 py-2" 
-                    onclick="saveRemarks()"
-                >
-                    Save
-                </button>
-                <button 
-                    class="ml-2 bg-red-500 text-white rounded-md px-4 py-2" 
-                    onclick="closeRemarksModal()"
-                >
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
+            // Use IntersectionObserver to detect if the table section is in view
+            const productTableSection = document.getElementById('product-details-section');
 
-    <div id="view-remarks-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-md p-5 w-1/3">
-            <h2 class="text-lg font-bold mb-4">View Remarks</h2>
-            <p id="view-remarks-text" class="text-gray-800"></p>
-            <div class="flex justify-end mt-4">
-                <button 
-                    class="bg-red-500 text-white rounded-md px-4 py-2" 
-                    onclick="closeViewRemarksModal()"
-                >
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
+            const observer = new IntersectionObserver(entries => {
+                // If the table section is in view and has not polled yet
+                if (entries[0].isIntersecting && !hasPolled) {
+                    startPollingOnce();
+                }
+            }, { threshold: 0.5 }); // Start polling when 50% of the section is in view
 
+            // Start observing the product table section
+            observer.observe(productTableSection);
 
-    <div id="budget-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-md p-5 w-11/12 md:w-1/3 relative">
-            <div id="modal-content"></div>
-            <a href="#" class="absolute top-3 right-3 text-xl text-gray-500 hover:text-gray-800">&times;</a>
-        </div>
-    </div>
-
-    <script src="{{ asset('js/purchasing-officer/add-product-details-alert.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/product-details-alert.js') }}"></script>
+            // Initial fetch when the page loads
+            fetchUpdatedProducts();
+        })();
+    </script>
+    <script src="{{ asset('js/add-product-details-alert.js') }}"></script>
+    <script src="{{ asset('js/product-details-alert.js') }}"></script>
+    
 
     @include('components.budget-modal')
     @endsection
 
-    <script src="{{ asset('js/purchasing-officer/alert-stocks.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/inventory.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/product.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/selection.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/calculationproduct.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/calculation.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/budgetjs.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/nof.js') }}"></script>
-    <script src="{{ asset('js/purchasing-officer/form-data.js') }}"></script>
+    <script src="{{ asset('js/alert-stocks.js') }}"></script>
+    <script src="{{ asset('js/inventory.js') }}"></script>
+    <script src="{{ asset('js/product.js') }}"></script>
+    <script src="{{ asset('js/selection.js') }}"></script>
+    <script src="{{ asset('js/calculationproduct.js') }}"></script>
+    <script src="{{ asset('js/calculation.js') }}"></script>
+    <script src="{{ asset('js/budgetjs.js') }}"></script>
+    <script src="{{ asset('js/nof.js') }}"></script>
+    <script src="{{ asset('js/form-data.js') }}"></script>
 
 
     <script>
