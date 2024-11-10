@@ -30,6 +30,7 @@ function calculateStocks() {
     document.getElementById('updated-remaining-balance-display').innerText = '₱' + remainingBalance.toFixed(2);
 }
 
+// Filter function
 function filterInventory() {
     const searchInput = document.getElementById('budget-search').value.toLowerCase();
     const startDate = document.getElementById('start-date-filter').value;
@@ -37,16 +38,16 @@ function filterInventory() {
     const table = document.getElementById('inventory-table');
     const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
+    const startDateObj = startDate ? new Date(startDate) : null;
+    const endDateObj = endDate ? new Date(endDate) : null;
+
     for (let row of rows) {
         const budgetIdentifier = row.cells[0].innerText.toLowerCase();
-        const createdAt = row.cells[5].innerText; // Adjust according to the correct date format
+        const createdAt = row.cells[5].innerText.trim(); // Assuming the date is in the 6th column
 
-        // Convert createdAt to a Date object for comparison
         const createdAtDate = new Date(createdAt);
-
-        // Check if createdAtDate is within the specified range
-        const isWithinDateRange = (!startDate || createdAtDate >= new Date(startDate)) &&
-                                  (!endDate || createdAtDate <= new Date(endDate));
+        const isWithinDateRange = (!startDateObj || createdAtDate >= startDateObj) &&
+                                  (!endDateObj || createdAtDate <= endDateObj);
 
         const matchesSearch = budgetIdentifier.includes(searchInput);
         const matchesDate = isWithinDateRange;
@@ -54,6 +55,12 @@ function filterInventory() {
         row.style.display = matchesSearch && matchesDate ? '' : 'none';
     }
 }
+
+// Add event listeners for real-time filtering on changes
+document.getElementById('budget-search').addEventListener('input', filterInventory);
+document.getElementById('start-date-filter').addEventListener('change', filterInventory);
+document.getElementById('end-date-filter').addEventListener('change', filterInventory);
+
 
 function formatBudget(input) {
     // Remove all non-digit characters

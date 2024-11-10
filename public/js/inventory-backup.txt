@@ -151,15 +151,16 @@ function openSetStatusModalForInventory(inventoryId, currentStatus) {
     modal.classList.remove('hidden');
 }
 
-
-function closeSetStatusModal() {
-    document.getElementById('set-status-modal').classList.add('hidden');
-    selectedInventoryId = null;
+function closeSetStatusModalForInventory() {
+    const modal = document.getElementById('set-status-modal-for-inventory');
+    modal.classList.add('hidden'); // Hide the modal
+    selectedSetStatusInventoryId = null;
 }
 
-function closeSetStatusModalForInventory() {
-    document.getElementById('set-status-modal-for-inventory').classList.add('hidden');
-    selectedInventoryId = null;
+function closeSetStatusModal() {
+    const modal = document.getElementById('set-status-modal-for-inventory');
+    modal.classList.add('hidden'); // Hide the modal
+    selectedSetStatusInventoryId = null;
 }
 
 async function saveStatus() {
@@ -203,7 +204,4 @@ async function saveStatus() {
         alert("An error occurred. Please check the console for details.");
     }
 }
-
-
-
 

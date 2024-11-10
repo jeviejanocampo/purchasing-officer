@@ -22,7 +22,7 @@
             <label class="font-medium text-gray-700">Product Details ID</label>
             <p id="product-details-id" class="block">{{ $product->product_details_id }}</p>
             <input type="text" name="product_details_id" id="edit-product-details-id" class="hidden mt-1 p-2 border rounded" value="{{ $product->product_details_id }}">
-            </div>
+        </div>
 
         <!-- Product Description -->
         <div>
@@ -57,6 +57,37 @@
             <label class="font-medium text-gray-700">Product Status</label>
             <p id="product-status" class="block">{{ $product->product_status }}</p>
             <input type="text" name="product_status" id="edit-product-status" class="hidden mt-1 p-2 border rounded" placeholder="Enter product status" value="In Stock">
+        </div>
+
+        <!-- Inventory Details (unit_cost and pieces_per_set) -->
+        <div>
+            <label class="font-medium text-gray-700">Unit Cost</label>
+            <p id="unit-cost" class="block">{{ $inventory ? $inventory->unit_cost : 'N/A' }}</p>
+            <input type="text" name="unit_cost" id="edit-unit-cost" class="hidden mt-1 p-2 border rounded" value="{{ $inventory ? $inventory->unit_cost : '' }}">
+        </div>
+
+        <div>
+            <label class="font-medium text-gray-700">Pieces Per Set</label>
+            <p id="pieces-per-set" class="block">{{ $inventory ? $inventory->pieces_per_set : 'N/A' }}</p>
+            <input type="text" name="pieces_per_set" id="edit-pieces-per-set" class="hidden mt-1 p-2 border rounded" value="{{ $inventory ? $inventory->pieces_per_set : '' }}">
+        </div>
+
+        <!-- Calculate Product Price Button -->
+        <div class="mt-4">
+            <button id="calculate-price" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors duration-300">
+                Calculate Product Price for Retail Price
+            </button>
+        </div>
+
+        <!-- Price Calculation Overview -->
+        <div id="price-overview" class="mt-6 hidden">
+            <h2 class="text-lg font-bold mb-2">Price Calculation Overview</h2>
+            <ul>
+                <li><strong>Unit Cost:</strong> <span id="calc-unit-cost"></span></li>
+                <li><strong>Pieces Per Set:</strong> <span id="calc-pieces-per-set"></span></li>
+                <li><strong>Markup (25%):</strong> <span id="calc-markup"></span></li>
+                <li><strong>Final Product Price:</strong> <span id="calc-final-price"></span></li>
+            </ul>
         </div>
 
         <!-- Buttons (Edit, Cancel, Save) -->
@@ -167,6 +198,72 @@
 
         // Submit the form to update the product
         updateForm.submit();
+    });
+
+    const calculatePriceButton = document.getElementById('calculate-price');
+    const editProductPriceInput = document.getElementById('edit-product-price');
+    const editUnitCostInput = document.getElementById('edit-unit-cost');
+    const editPiecesPerSetInput = document.getElementById('edit-pieces-per-set');
+    const priceOverview = document.getElementById('price-overview');
+
+
+    // Edit button functionality
+    editButton.addEventListener('click', async function() {
+        const productId = "{{ $product->product_id }}"; // Use the product ID to fetch inventory data
+        
+        try {
+            // Fetch inventory data for the product
+            const response = await fetch(`/product/${productId}/inventory-data`);
+            if (!response.ok) {
+                throw new Error('Inventory data not found');
+            }
+
+            const data = await response.json();
+
+            // Populate input fields with fetched data
+            document.getElementById('edit-product-price').value = data.unit_cost;
+            document.getElementById('edit-product-stocks').value = data.stocks_per_set;
+            document.getElementById('edit-product-expiry-date').value = data.exp_date;
+            document.getElementById('edit-product-status').value = 'In Stock'; // Set status to "In Stock"
+
+            // Show input fields when Edit button is clicked
+            editableFields.forEach(field => field.classList.remove('hidden'));  // Show input fields
+            textFields.forEach(field => field.classList.add('hidden'));  // Hide <p> text fields
+            editButton.classList.add('hidden'); // Hide Edit button
+            cancelButton.classList.remove('hidden'); // Show Cancel button
+            saveButton.classList.remove('hidden'); // Show Save button
+            calculatePriceButton.classList.remove('hidden'); // Show Calculate Price button
+
+        } catch (error) {
+            console.error(error);
+            alert('Error fetching inventory data.');
+        }
+    });
+
+    // Calculate price based on unit cost and pieces per set
+    calculatePriceButton.addEventListener('click', function() {
+        const unitCost = parseFloat(document.getElementById('edit-unit-cost').value);
+        const piecesPerSet = parseFloat(document.getElementById('edit-pieces-per-set').value);
+        const markupPercentage = 0.25;
+
+        if (isNaN(unitCost) || isNaN(piecesPerSet)) {
+            alert("Please enter valid values for Unit Cost and Pieces Per Set.");
+            return;
+        }
+
+        // Calculate markup and final product price
+        const totalCost = unitCost * piecesPerSet;
+        const markup = totalCost * markupPercentage;
+        const finalPrice = totalCost + markup;
+
+        // Update the price overview
+        document.getElementById('calc-unit-cost').textContent = `₱${unitCost.toFixed(2)}`;
+        document.getElementById('calc-pieces-per-set').textContent = piecesPerSet;
+        document.getElementById('calc-markup').textContent = `₱${markup.toFixed(2)}`;
+        document.getElementById('calc-final-price').textContent = `₱${finalPrice.toFixed(2)}`;
+
+        // Show the overview section
+        priceOverview.classList.remove('hidden');
     });
 </script>
 @endsection

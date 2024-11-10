@@ -88,7 +88,7 @@
 
                 <div class="flex justify-end">
                     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Save</button>
-                    <button type="button" onclick="closeSetStatusModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
+                    <button type="button" onclick="closeSetStatusModal()" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Exit</button>
                 </div>
             </form>
         </div>

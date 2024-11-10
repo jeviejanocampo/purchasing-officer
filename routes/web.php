@@ -89,10 +89,14 @@ Route::post('/product/add-restock-details', [ProductController::class, 'addResto
 Route::get('/product-details/{product_id}', function ($product_id) {
     // Fetch the product by ID
     $product = \App\Models\Product::find($product_id);
-    
-    // Pass product data to the view
-    return view('dashboard-components.product-details', compact('product'));
+
+    // Fetch the inventory data by matching product_id in the inventory table
+    $inventory = \App\Models\Inventory::where('product_id', $product_id)->first();
+
+    // Pass both product and inventory data to the view
+    return view('dashboard-components.product-details', compact('product', 'inventory'));
 })->name('product.details');
+
 
 Route::put('/product/update-status/{product_id}', [ProductController::class, 'updateStatus'])->name('product.updateStatus');
 
@@ -101,3 +105,5 @@ Route::get('/product/{productId}/inventory-data', [ProductController::class, 'fe
 Route::put('/product/{product_id}/update', [ProductController::class, 'update'])->name('product.update');
 
 Route::get('/products/update', [ProductController::class, 'getUpdatedProducts']);
+
+Route::post('/inventory/update/{id}', [InventoryController::class, 'updateStockQuantity']);

@@ -52,9 +52,10 @@
                     <th class="border px-1 py-1">Stocks per Set</th>
                     <th class="border px-1 py-1">Created At</th>
                     <th class="border px-1 py-1">Expiration Date</th>
+                    <th class="border px-1 py-1">Edit Quantity</th>
                     <th class="border px-1 py-1">Status</th> 
                     <th class="border px-1 py-1">Remarks</th> 
-                    <th class="border px-1 py-1">Actions</th> 
+                    <th class="border px-1 py-1">Reports</th> 
                 </tr>
             </thead>
             <tbody>
@@ -86,6 +87,10 @@
                         </td>
                         <td class="border px-1 py-1">{{ $inventory->created_at }}</td>
                         <td class="border px-1 py-1">{{ $inventory->exp_date }}</td>
+                        <td class="border px-1 py-1">
+                                <!-- Edit quantity button -->
+                                <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">Edit Quantity</button>
+                            </td>
                         <td class="border px-1 py-1">
                             <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
                             <button 
@@ -122,7 +127,7 @@
                             <a 
                                 href="{{ route('inventory.details', ['id' => $inventory->id]) }}" 
                                 class="bg-blue-700 text-white rounded-md px-1 py-1 hover:bg-blue-800 transition duration-200">
-                                Generate Summary Report
+                                View
                             </a>
                         </td>
                     </tr>

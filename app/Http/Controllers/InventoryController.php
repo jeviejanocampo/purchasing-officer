@@ -63,4 +63,29 @@ class InventoryController extends Controller
             return response()->json(['success' => false]);
         }
     }
+
+    public function updateStockQuantity(Request $request, $id)
+    {
+        // Validate the incoming request
+        $validated = $request->validate([
+            'stocks_per_set' => 'required|integer|min:0',
+        ]);
+
+        // Find the inventory record by ID
+        $inventory = Inventory::find($id);
+        
+        if ($inventory) {
+            // Update the stock quantity
+            $inventory->stocks_per_set = $validated['stocks_per_set'];
+            $inventory->save();
+
+            // Return a successful response
+            return response()->json(['success' => true]);
+        }
+
+        // Return a failure response if the inventory item isn't found
+        return response()->json(['success' => false, 'message' => 'Inventory item not found.'], 400);
+    }
+
+
 }
