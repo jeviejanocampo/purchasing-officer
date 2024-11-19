@@ -154,7 +154,7 @@
                                 ? '<span class="text-white bg-red-500 px-3 py-1 rounded">Details undefined, need actions</span>'
                                 : ''}
                             <a href="{{ route('product.details', '') }}/${product.product_id}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors duration-300 mt-2 heartbeat-animation">
-                                Edit
+                               ✎
                             </a>
                         </td>
                     `;

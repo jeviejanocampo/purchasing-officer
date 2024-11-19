@@ -112,7 +112,7 @@
                                     class="ml-2 bg-yellow-600 text-white rounded-md px-1 py-1 hover:bg-yellow-700" 
                                     onclick="openEditRemarksModal('{{ $inventory->budget_identifier }}', '{{ $inventory->remarks }}')"
                                 >
-                                    Edit
+                                ✎
                                 </button>
                             @else
                                 <button 

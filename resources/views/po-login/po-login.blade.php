@@ -49,47 +49,59 @@
     <div class="bg-white rounded-lg shadow-md p-8 w-110">
         <h2 class="text-2xl font-bold text-center mb-6">Purchasing Officer Portal</h2>
         
-        <div class="flex justify-center mb-4">
-            <!-- <button onclick="toggleForm('email')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 mr-2">Login with Email</button> -->
-            <button onclick="toggleForm('pin')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Login with PIN</button>
-            <button onclick="toggleForm('signup')" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300 ml-2">Sign Up</button>
-        </div>
-
-        <!-- Email and Password Form -->
-        <div id="email-password-form" style="display:none;">
-            <h3 class="text-lg font-semibold mb-2">Login using Email and Password</h3>
-            <form>
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="you@example.com">
-                </div>
-                <div class="mt-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" name="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="••••••••">
-                </div>
-                <a href="/main" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</a>
-            </form>
-        </div>
+    <div class="flex justify-center mb-4">
+        <button onclick="toggleForm('email')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300 mr-2">Login with Email</button>
+        <button onclick="toggleForm('pin')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Login with PIN</button>
+        <button onclick="toggleForm('signup')" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300 ml-2">Sign Up</button>
+    </div>
         
-       <!-- PIN Form -->
-       <div id="pin-form" style="display:none;">
-            <h3 class="text-lg font-semibold mb-2">Login using PIN</h3>
-            <form action="{{ route('pin.login') }}" method="POST" id="pinLoginForm">
-                @csrf
-                <div>
-                    <label for="pin" class="block text-sm font-medium text-gray-700">PIN</label>
-                    <input type="password" name="pin" id="pin" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="Enter your PIN">
+    <div id="email-password-form" style="display:none;">
+        <h3 class="text-lg font-semibold mb-2">Login using Email and Password</h3>
+        <form action="{{ route('email.login') }}" method="POST" id="emailPasswordForm">
+            @csrf
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" id="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="you@example.com" aria-required="true">
+            </div>
+            <div class="mt-4">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="••••••••" aria-required="true">
+            </div>
+            <button type="submit" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
+            <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline" id="forgotPasswordLink" onclick="window.location.href='{{ route('forgot.password') }}';">Forgot Password?</p>
+            <!-- Display error message if any -->
+            @if ($errors->any())
+                <div class="mt-4 text-red-500 text-sm">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
-                <button type="submit" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
-                <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline" onclick="showForgotPinAlert()">Forgot PIN?</p>
-            </form>
-
-            @if(session('error'))
-                <script>
-                    swal("Error!", "{{ session('error') }}", "error");
-                </script>
             @endif
-        </div>
+        </form>
+    </div>   
+
+
+    <!-- PIN Form -->
+    <div id="pin-form" style="display:none;">
+        <h3 class="text-lg font-semibold mb-2">Login using PIN</h3>
+        <form action="{{ route('pin.login') }}" method="POST" id="pinLoginForm">
+            @csrf
+            <div>
+                <label for="pin" class="block text-sm font-medium text-gray-700">PIN</label>
+                <input type="password" name="pin" id="pin" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="Enter your PIN">
+            </div>
+            <button type="submit" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
+            <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline" onclick="showForgotPinAlert()">Forgot PIN?</p>
+        </form>
+
+        @if(session('error'))
+            <script>
+                swal("Error!", "{{ session('error') }}", "error");
+            </script>
+        @endif
+    </div>
 
 
 
@@ -164,6 +176,34 @@
         function showForgotPinAlert() {
             alert("Contact the admin at 0945323232 / 43434343 to change your PIN.");
         }
+    </script>
+      <script>
+        document.getElementById('emailPasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect; // Redirect to the dashboard
+            } else {
+                swal("Error!", data.message, "error");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+     });
+
     </script>
 </body>
 </html>

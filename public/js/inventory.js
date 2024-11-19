@@ -39,7 +39,7 @@ function updateInventoryTable(inventories) {
                 <td class="border px-1 py-1">${inventory.exp_date}</td>
                 <td class="border px-1 py-1">
                     <!-- Edit quantity button -->
-                    <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">Edit Quantity</button>
+                    <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">✎</button>
                 </td>
                 <td class="border px-1 py-1" id="set-status-${inventory.id}">
                     ${inventory.set_status}
@@ -48,7 +48,7 @@ function updateInventoryTable(inventories) {
                 <td class="border px-1 py-1">
                     ${inventory.remarks ? 
                         `<button class="bg-blue-500 text-white rounded-md px-2 py-1 text-sm hover:bg-blue-600 transition duration-200" onclick="openViewRemarksModal('${inventory.remarks}')">View</button>
-                        <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditRemarksModal('${inventory.budget_identifier}', '${inventory.remarks}')">Edit</button>` :
+                        <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditRemarksModal('${inventory.budget_identifier}', '${inventory.remarks}')">✎</button>` :
                         `<button class="ml-1 bg-green-500 text-white rounded-md px-1 py-1 text-sm" onclick="openRemarksModal('${inventory.budget_identifier}')">Add Remarks</button>`
                     }
                 </td>

@@ -25,27 +25,28 @@ class AuthController extends Controller
                 'password' => 'required|string|min:8',
                 'pin' => 'required|digits:5|unique:users',
             ]);
-
+    
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-
-            // Create the new user in the database
+    
+            // Create the new user in the database without hashing the password
             User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), // Ensure password is hashed
+                'password' => $request->password, // Store password in plain text
                 'pin' => $request->pin,
                 'role' => 'user', // Set default role, adjust if necessary
             ]);
-
+    
             // Redirect back to the same form with a success message
             return redirect()->route('register')->with('success', 'Registration successful! You can now log in.');
         }
-
+    
         // If the request is a GET request, return the registration form view
         return view('po-login.po-login');
     }
+    
 
     public function pinLogin(Request $request)
     {
@@ -180,4 +181,72 @@ class AuthController extends Controller
 
     
     
+    public function emailLogin(Request $request)
+    {
+        // Validate the incoming request data
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+    
+        // Attempt to authenticate the user with the given email and password
+        $user = User::where('email', $request->email)->first();
+    
+        if ($user && Hash::check($request->password, $user->password)) {
+            // Check if the user's status is 'CONFIRMED'
+            if ($user->users_status === 'CONFIRMED') {
+                // Log the user in
+                Auth::login($user);
+    
+                // Store the user ID in the session
+                session(['user_id' => $user->id]);
+    
+                // Return a successful response with redirect URL
+                return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+            } else {
+                // If the user's status is not confirmed
+                return response()->json(['success' => false, 'message' => 'Please wait for confirmation or contact the admin.']);
+            }
+        }
+    
+        // If the credentials are incorrect
+        return response()->json(['success' => false, 'message' => 'Invalid credentials. Please try again.']);
+    }
+
+
+    public function resetPassword(Request $request)
+    {
+        // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email', // Ensure the email exists in the users table
+            'new_password' => 'required|string|min:8|confirmed', // Validate password strength and confirm password
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 400);
+        }
+    
+        // Find the user by email
+        $user = User::where('email', $request->email)->first();
+    
+        // If the user exists, update the password
+        if ($user) {
+            // Store the password as plain text (not hashed)
+            $user->password = $request->new_password;
+            $user->save();
+    
+            // Log the action (for monitoring purposes)
+            Log::info('Password reset successfully for user:', ['user_id' => $user->id]);
+    
+            // Return success response
+            return response()->json(['success' => true, 'message' => 'Password reset successfully.']);
+        }
+    
+        // If user not found
+        return response()->json(['success' => false, 'message' => 'Email not found.']);
+    }
+    
+    
+    
+
 }

@@ -144,6 +144,9 @@
         font-family: 'Poppins', sans-serif;
     }
     @media print {
+        body {
+            zoom: 90%;
+        }
         .sidebar, header, .print-button, a.inline-block {
             display: none;
         }

@@ -17,7 +17,7 @@
                     <th class="px-4 py-2 text-left">ID</th>
                     <th class="px-4 py-2 text-left">Supplier Name</th>
                     <th class="px-4 py-2 text-left">Phone Number</th>
-                    <th class="px-4 py-2 text-left">Product Type</th>
+                    <!-- <th class="px-4 py-2 text-left">Product Type</th> -->
                     <th class="px-4 py-2 text-left">Status</th>
                     <th class="px-4 py-2 text-left">Edit Status</th>
                     <th class="px-4 py-2 text-left">View</th>
@@ -29,7 +29,7 @@
                         <td class="px-4 py-2">{{ $supplier->id }}</td>
                         <td class="px-4 py-2">{{ $supplier->supplier_name }}</td>
                         <td class="px-4 py-2">{{ $supplier->phone_number }}</td>
-                        <td class="px-4 py-2">{{ $supplier->product_type }}</td>
+                        <!-- <td class="px-4 py-2">{{ $supplier->product_type }}</td> -->
                         <td class="px-4 py-2" id="supplier-status-{{ $supplier->id }}">
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full 
                                 {{ $supplier->status == 'Active' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
@@ -93,7 +93,6 @@
                     <p><strong>Phone Number:</strong> ${data.phone_number}</p>
                     <p><strong>Email:</strong> ${data.email}</p>
                     <p><strong>Address:</strong> ${data.address}</p>
-                    <p><strong>Product Type:</strong> ${data.product_type}</p>
                     <p><strong>Status:</strong> ${data.status}</p>
                     <p><strong>Created At:</strong> ${data.created_at}</p>
                     <p><strong>Updated At:</strong> ${data.updated_at}</p>

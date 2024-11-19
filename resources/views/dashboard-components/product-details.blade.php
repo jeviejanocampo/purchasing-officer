@@ -6,10 +6,13 @@
     <button onclick="history.back()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors duration-300 mb-4">
         ← Back to Table
     </button>
+    <h1 class="text-xl font-bold mb-4">Product Details</h1>
+
+    <div class="bg-green-100 text-green-800 p-3 rounded-md mb-4">
+            <strong>Select 1 for Water Category | Select 2 for Grocery Category
+    </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <h1 class="text-xl font-bold mb-4">Product Details</h1>
-
         <!-- Product Price -->
         <div>
             <label class="font-medium text-gray-700">Product Price</label>

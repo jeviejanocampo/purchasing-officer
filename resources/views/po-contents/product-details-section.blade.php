@@ -54,7 +54,7 @@
         <thead>
             <tr>
                 <th class="px-2 py-1 border-b">Product ID</th>
-                <th class="px-2 py-1 border-b">Category</th>
+                <th class="px-2 py-1 border-b">Category '1' Water | '2' Grocery</th>
                 <th class="px-2 py-1 border-b">Product Name</th>
                 <th class="px-2 py-1 border-b">Product Image</th>
                 <th class="px-2 py-1 border-b">Active Stocks</th>

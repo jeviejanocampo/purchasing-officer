@@ -127,6 +127,16 @@ Route::post('/supplier/{id}/update-status', [SupplierController::class, 'updateS
 
 Route::post('/budget/{id}/update-status', [BudgetController::class, 'updateStatus'])->name('budget.updateStatus');
 
+Route::post('/email-login', [AuthController::class, 'emailLogin'])->name('email.login');
+
+
+// Route for Forgot Password page
+Route::get('/forgot-password', function () {
+    return view('po-login.forgot-password');  // Correct path to the view
+})->name('forgot.password');
+
+
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset.password');
 
 // Staff Routes
 
