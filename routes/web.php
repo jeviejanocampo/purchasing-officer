@@ -5,12 +5,13 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\LogController;
 use Illuminate\Support\Facades\DB;
 use App\Models\Inventory; 
 use App\Models\Budget; 
 
-
+//Purchasing Officer Routes
 Route::get('/main', function () {
     return view('main.main'); 
 })->name('dashboard');
@@ -38,13 +39,15 @@ Route::get('/stock-procurement', function () {
     $productIds = \App\Models\Product::select('product_id', 'product_name')->get();
 
     $productNames = \App\Models\Budget::select('product_to_buy')
-    ->where('budget_status', 'PENDING')
+    ->whereIn('budget_status', ['PENDING', 'Available'])
     ->distinct()
     ->get();
 
+    $suppliers = \App\Models\Supplier::all();
+
 
     // Pass the data to the view
-    return view('addproduct', compact('inventoryCount', 'budgets', 'inventories', 'productIds', 'products', 'productNames'));
+    return view('addproduct', compact('inventoryCount', 'budgets', 'inventories', 'productIds', 'products', 'productNames', 'suppliers'));
 })->name('calculation');
 
 
@@ -98,7 +101,7 @@ Route::get('/product-details/{product_id}', function ($product_id) {
 })->name('product.details');
 
 
-Route::put('/product/update-status/{product_id}', [ProductController::class, 'updateStatus'])->name('product.updateStatus');
+Route::put('/product/update-status/{product_id}', [ProductController::class, 'updateStatus'])->name('product.updateStatus');    
 
 Route::get('/product/{productId}/inventory-data', [ProductController::class, 'fetchInventoryData']);
 
@@ -107,3 +110,46 @@ Route::put('/product/{product_id}/update', [ProductController::class, 'update'])
 Route::get('/products/update', [ProductController::class, 'getUpdatedProducts']);
 
 Route::post('/inventory/update/{id}', [InventoryController::class, 'updateStockQuantity']);
+
+
+Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+
+Route::get('/supplier/{id}', function($id) {
+    $supplier = \App\Models\Supplier::find($id);
+    if ($supplier) {
+        return response()->json($supplier);
+    } else {
+        return response()->json(['error' => 'Supplier not found'], 404);
+    }
+});
+
+Route::post('/supplier/{id}/update-status', [SupplierController::class, 'updateStatus']);
+
+Route::post('/budget/{id}/update-status', [BudgetController::class, 'updateStatus'])->name('budget.updateStatus');
+
+
+// Staff Routes
+
+// Home route for staff main page
+Route::get('/staff/home/main', function () {
+    return view('staff.home.staff-main');
+})->name('staff.home.main');
+
+// Login route for staff
+Route::get('/staff-login', function () {
+    return view('staff.staff-login');
+})->name('staff.login');
+
+// Signup route for staff
+Route::post('/staff-signup', [AuthController::class, 'staffSignup'])->name('staff-signup');
+
+// PIN login route for staff
+Route::post('/login-pin', [AuthController::class, 'loginWithPin'])->name('login.pin');
+
+// Logout route for staff
+Route::post('/staff-logout', [AuthController::class, 'Stafflogout'])->name('staff.logout');
+
+
+
+
+

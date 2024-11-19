@@ -13,6 +13,7 @@ class Budget extends Model
 
     protected $fillable = [
         'reference_code',
+        'supplier_id',
         'input_budget',
         'balance',
         'product_to_buy',

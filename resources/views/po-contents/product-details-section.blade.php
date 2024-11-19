@@ -54,8 +54,10 @@
         <thead>
             <tr>
                 <th class="px-2 py-1 border-b">Product ID</th>
+                <th class="px-2 py-1 border-b">Category</th>
                 <th class="px-2 py-1 border-b">Product Name</th>
                 <th class="px-2 py-1 border-b">Product Image</th>
+                <th class="px-2 py-1 border-b">Active Stocks</th>
                 <th class="px-2 py-1 border-b">Created At</th>
                 <th class="px-2 py-1 border-b">Product Status</th>
                 <th class="px-2 py-1 border-b">Actions</th>

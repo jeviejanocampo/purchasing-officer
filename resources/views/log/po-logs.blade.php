@@ -22,10 +22,9 @@
                 <input type="date" id="end-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
                 <select id="category-filter" class="p-2 bg-white border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Category</option>
-                    <option value="Budget Management" data-keywords="Budget created,remaining_balance,available_budget">Budget Management</option>
-                    <option value="Inventory Management" data-keywords="Creating inventory item,product_name,total_cost">Inventory Management</option>
-                    <option value="Product Addition and Update" data-keywords="Product added,Product added and budget updated">Product Addition and Update</option>
-                    <option value="Error or Success Messages" data-keywords="Error,Success,Failure,Completed">Error or Success Messages</option>
+                    <option value="budget_created" data-keywords="Budget created">Budget Created</option>
+                    <option value="inventory" data-keywords="Creating inventory item,product_name,total_cost">Inventory</option>
+                    <option value="product_added" data-keywords="Product added,Product added and budget updated">Product Added</option>
                 </select>
                 <button id="clear-button" class="p-2 bg-gray-500 text-white rounded-md shadow-sm">Clear</button>
                 <button id="show-all-button" class="p-2 bg-gray-700 text-white rounded-md shadow-sm">Show All</button>
@@ -51,7 +50,15 @@
                 @foreach($logs as $log)
                     <tr class="log-row hover:bg-gray-100">
                         <td class="p-4 border-b text-center">{{ $log->id }}</td>
-                        <td class="p-4 border-b">{{ $log->log_data }}</td>
+                        <td class="p-4 border-b">
+                            <!-- Improved log data formatting -->
+                            @if(isset($log->log_data))
+                                <div class="font-semibold text-lg mb-2">Log Message:</div>
+                                <pre class="bg-gray-50 p-3 rounded-md border border-gray-200">{{ json_encode(json_decode($log->log_data), JSON_PRETTY_PRINT) }}</pre>
+                            @else
+                                <p class="text-gray-500">No log data available.</p>
+                            @endif
+                        </td>
                         <td class="p-4 border-b text-center">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                         <td class="p-4 border-b text-center">{{ $log->updated_at->format('Y-m-d H:i:s') }}</td>
                     </tr>
@@ -85,11 +92,17 @@
             document.querySelectorAll(".log-row").forEach(row => row.style.display = "table-row");
         });
 
+        // Clear the filter
+        document.getElementById("clear-button").addEventListener("click", function() {
+            document.getElementById("category-filter").value = "";
+            document.querySelectorAll(".log-row").forEach(row => row.style.display = "table-row");
+        });
+
         // Filter logs based on keywords
         function filterLogs(keywords) {
             document.querySelectorAll(".log-row").forEach(row => {
                 const logData = row.querySelector("td:nth-child(2)").innerText;
-                const match = keywords.some(keyword => logData.includes(keyword));
+                const match = keywords.some(keyword => logData.toLowerCase().includes(keyword.toLowerCase()));
                 row.style.display = match ? "table-row" : "none";
             });
         }

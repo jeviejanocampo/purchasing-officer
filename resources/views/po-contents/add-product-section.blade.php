@@ -20,13 +20,13 @@
                     <label for="budget-selector" class="block text-sm font-medium text-gray-700">Select Budget ID:</label>
                     <select id="budget-selector" name="budget_identifier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="updateBudgetInput()">
                         <option value="" disabled selected>Select a budget identifier</option>
-                        @foreach ($budgets as $budget)
-                            @if ($budget->budget_status === 'PENDING')
-                                <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">
-                                    {{ $budget->id }} - {{ $budget->product_to_buy }}
-                                </option>
-                            @endif
-                        @endforeach
+                            @foreach ($budgets as $budget)
+                            @if ($budget->budget_status === 'PENDING' || $budget->budget_status === 'Available')
+                            <option value="{{ $budget->id }}" data-input-budget="{{ number_format($budget->input_budget, 2) }}" data-product="{{ $budget->product_to_buy }}">
+                                        {{ $budget->id }} - {{ $budget->product_to_buy }}
+                                    </option>
+                                @endif
+                            @endforeach
                     </select>
                 </div>
 

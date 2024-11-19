@@ -289,9 +289,22 @@ class ProductController extends Controller
 
     public function getUpdatedProducts()
     {
-        // Fetch products ordered by the 'created_at' column in descending order
-        $products = Product::orderBy('created_at', 'desc')->get();
+        // Fetch products along with their inventory, and calculate the total stocks_per_set
+        $products = Product::with(['details', 'inventory'])  // Load product details and inventory (stocks_per_set)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($product) {
+                // Calculate total stocks_per_set by summing up the stocks_per_set from all inventory records
+                $totalStocks = $product->inventory->sum('stocks_per_set');
+                $product->total_stocks = $totalStocks; // Add a custom property for total stocks
+    
+                return $product;
+            });
+    
         return response()->json($products);
     }
+    
+
+
 
 }

@@ -47,6 +47,21 @@
             </div>
         </div>
 
+        <!-- Supplier Dropdown -->
+        <div class="mb-4">
+            <label for="supplier_id" class="block text-sm font-medium text-gray-700">Select Supplier:</label>
+            <select 
+                id="supplier_id" 
+                name="supplier_id" 
+                class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
+            >
+                <option value="" disabled selected>Select a Supplier</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{ $supplier->id }}">{{ $supplier->supplier_name }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <button type="submit" class="mt-2 bg-green-500 text-white rounded-md p-2">Confirm Budget</button>
     </form>
 </div>

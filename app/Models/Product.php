@@ -30,4 +30,16 @@ class Product extends Model
 
     // Disable timestamps if the table does not use 'created_at' and 'updated_at'
     public $timestamps = false;
+
+    // Define the relationship with ProductDetails
+    public function details()
+    {
+        return $this->belongsTo(ProductDetails::class, 'product_details_id', 'product_details_id');
+    }
+
+    public function inventory()
+    {
+        return $this->hasMany(Inventory::class, 'product_id', 'product_id');
+        }
+    
 }

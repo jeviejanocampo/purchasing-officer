@@ -17,7 +17,7 @@
     </button>
 
     <!-- Title Section -->
-    <h1 class="text-3xl mb-4" style="font-family: 'Poppins', sans-serif; font-weight: 200; color: #C96A2A;">
+    <h1 class="text-3xl mb-4" style="font-family: 'Lato', sans-serif; font-weight: 200; color: #C96A2A;">
         TinioFoods Inventory and Budget Summary Report
     </h1>
     <p class="mb-2"><strong>Company Name:</strong> MS Tinio Food Products Trading</p>

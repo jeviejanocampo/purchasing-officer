@@ -54,7 +54,7 @@
 <body class="bg-gray-100" style="font-family: 'Lato', sans-serif;">
     <div class="flex flex-col min-h-screen lg:flex-row">
     @php
-        $userId = session('user_id');
+        $userId = session('user_id');   
         $user = \App\Models\User::find($userId); 
     @endphp
 
@@ -62,19 +62,19 @@
         <div class="text-center mb-6">
             <img src="{{ asset('images/purchasing-officer.png') }}" alt="Profile Image" class="w-14 h-14 rounded-full mx-auto mb-2"> 
             <div class="font-semibold">{{ $user->name ?? 'Guest' }}</div>
-            <div class="text-center mb-10">Purchasing Officer</div>
+            <div class="text-center mb-10">Staff Officer</div>
         </div>
 
         <nav>
             <ul class="flex flex-col space-y-2 lg:space-y-4 lg:block text-center lg:text-left">
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('dashboard') }}" class="block">Dashboard</a>
+                    <a class="block">Dashboard</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('calculation') }}" class="block">Stock Procurement</a>
+                    <a class="block">Stock Procurement</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('po.logs') }}" class="block">PO Logs</a>
+                    <a  class="block">PO Logs</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
                     <a href="#" onclick="event.preventDefault(); confirmLogout();" class="block">Logout</a>
@@ -97,7 +97,7 @@
         @include('dashboard-components.notifications')
     </main>
 
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+    <form id="logout-form" action="{{ route('staff.logout') }}" method="POST" class="hidden">
         @csrf
     </form>
 
