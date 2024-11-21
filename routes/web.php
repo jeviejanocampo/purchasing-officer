@@ -5,6 +5,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\LogController;
 use Illuminate\Support\Facades\DB;
@@ -137,6 +138,20 @@ Route::get('/forgot-password', function () {
 
 
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset.password');
+
+Route::get('/edit-supplier/{id}', function ($id) {
+    return view('po-contents.edit-supplier', ['id' => $id]);
+})->name('edit-supplier');
+
+
+Route::get('/edit-supplier/{id}', [SupplierController::class, 'edit'])->name('edit-supplier');
+
+Route::post('/edit-supplier/{id}', [SupplierController::class, 'update'])->name('update-supplier');
+
+Route::delete('/product/{id}/remove', [ProductController::class, 'destroy'])->name('product.remove');
+
+
+Route::get('/dashboard', [DashboardController::class, 'showDashboard'])->name('dashboard');
 
 // Staff Routes
 

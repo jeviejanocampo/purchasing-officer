@@ -75,7 +75,7 @@ class BudgetController extends Controller
     public function showBudgetDetails($id)
     {
         // Retrieve the budget by ID
-        $budget = Budget::find($id);
+        $budget = Budget::with('supplier')->find($id);
     
         if (!$budget) {
             return response()->json([

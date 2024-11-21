@@ -1,17 +1,19 @@
 @extends('main.main')
 
 @section('content')
+
 <div class="p-5 font-roboto bg-white">
+    @php
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId); 
+    @endphp
     <!-- Back and Print Buttons -->
-    <a 
-        href="{{ route('calculation') }}" 
-        class="inline-block bg-gray-300 text-gray-800 px-3 py-1 rounded mb-4 hover:bg-gray-400 transition duration-200"
-    >
-        &larr; Back to Inventory
-    </a>
+    <button onclick="history.back()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors duration-300 mb-4">
+            Return
+    </button>
     <button 
         onclick="window.print()" 
-        class="print-button text-white bg-blue-600 px-3 py-1 rounded mb-4 hover:bg-blue-700 transition duration-200"
+       class="bg-blue-800 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300 mb-4"
     >
         Print
     </button>
@@ -23,6 +25,18 @@
     <p class="mb-2"><strong>Company Name:</strong> MS Tinio Food Products Trading</p>
     <p class="mb-2"><strong>Address:</strong> 967 Highway Mangnao, Dumaguete City 6200, Lamberto Macias Road, Dumaguete, Negros Oriental</p>
     <p class="mb-4"><strong>Phone:</strong> (035) 225 7840</p>
+
+    <div class="p-4 mb-6">
+        <h2 class="text-lg font-bold mb-3">Supplier Details</h2>
+        <div id="supplier-details"></div>
+    </div>
+
+        <!-- Budget Details Section -->
+    <div class="p-4 mb-6">
+        <h2 class="text-lg font-bold mb-3">Budget Details</h2>
+        <div id="budget-details"></div>
+    </div>
+
 
     <!-- Inventory Details Section -->
     <div class="p-4 mb-6">
@@ -55,14 +69,6 @@
         </table>
     </div>
     
-    
-
-    <!-- Budget Details Section -->
-    <div class="p-4 mb-6">
-        <h2 class="text-lg font-bold mb-3">Budget Details</h2>
-        <div id="budget-details" class="border rounded-lg p-4 shadow-md bg-gray-50"></div>
-    </div>
-
     <!-- Calculations Section -->
     <div class="border rounded-lg p-4">
         <h2 class="text-lg font-bold mb-3">Calculation Result</h2>
@@ -133,8 +139,11 @@
     </div>
 
 
-    <h3 class="text-lg  mt-6 text-center">FOR THE OWNER</h3>
-    <h3 class="text-lg  mt-2 text-center">Record By the Purchasing Officer</h3>
+    <h1 class="text-lg  mt-6 text-center">FOR THE OWNER</h1>
+    <h3 class="mt-2 text-center">Record By</h3>
+    <div class="mt-2 text-center">{{ $user->name ?? 'Guest' }}</div>
+    <h3 class="mt-2 text-center">(Assigned Purchasing Officer)</h1>
+
 
 </div>
 
@@ -145,7 +154,7 @@
     }
     @media print {
         body {
-            zoom: 90%;
+            zoom: 85%;
         }
         .sidebar, header, .print-button, a.inline-block {
             display: none;
@@ -157,7 +166,7 @@
     }
 </style>
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         const budgetId = {{ $inventory->budget_identifier }};
         fetchBudgetDetails(budgetId);
@@ -168,16 +177,57 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Populate Budget Details
                     const budgetDetailsContainer = document.getElementById('budget-details');
                     budgetDetailsContainer.innerHTML = `
-                        <p><strong>ID:</strong> ${data.data.id}</p>
-                        <p><strong>Reference Code:</strong> ${data.data.reference_code}</p>
-                        <p><strong>Product to Buy:</strong> ${data.data.product_to_buy}</p>
-                        <p><strong>Input Budget:</strong> ₱${parseFloat(data.data.input_budget).toFixed(2)}</p>
-                        <p><strong>Remaining Balance:</strong> ₱${parseFloat(data.data.remaining_balance).toFixed(2)}</p>
-                        <p><strong>Created At:</strong> ${data.data.created_at}</p>
+                       <table class="table-auto w-full">
+                            <thead>
+                                <tr>
+                                    <th class="font-semibold border px-2 py-1">ID</th>
+                                    <th class="font-semibold border px-2 py-1">Reference Code</th>
+                                    <th class="font-semibold border px-2 py-1">Product to Buy</th>
+                                    <th class="font-semibold border px-2 py-1">Input Budget</th>
+                                    <th class="font-semibold border px-2 py-1">Remaining Balance</th>
+                                    <th class="font-semibold border px-2 py-1">Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border px-2 py-1">${data.data.id}</td>
+                                    <td class="border px-2 py-1">${data.data.reference_code}</td>
+                                    <td class="border px-2 py-1">${data.data.product_to_buy}</td>
+                                    <td class="border px-2 py-1">₱${parseFloat(data.data.input_budget).toFixed(2)}</td>
+                                    <td class="border px-2 py-1">₱${parseFloat(data.data.remaining_balance).toFixed(2)}</td>
+                                    <td class="border px-2 py-1">${data.data.created_at}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     `;
 
+                    // Populate Supplier Details
+                    const supplierDetailsContainer = document.getElementById('supplier-details');
+                    const supplier = data.data.supplier;
+                    supplierDetailsContainer.innerHTML = `
+                   <table class="table-auto w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="font-semibold border px-2 py-1">Supplier Name</th>
+                                <th class="font-semibold border px-2 py-1">Phone</th>
+                                <th class="font-semibold border px-2 py-1">Email</th>
+                                <th class="font-semibold border px-2 py-1">Product Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border px-2 py-1">${supplier.supplier_name}</td>
+                                <td class="border px-2 py-1">${supplier.phone_number}</td>
+                                <td class="border px-2 py-1">${supplier.email}</td>
+                                <td class="border px-2 py-1">${supplier.product_type}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    `;
+                    // Calculation logic
                     const unitCost = {{ $inventory->unit_cost }};
                     const piecesPerSet = {{ $inventory->pieces_per_set }};
                     const stocksPerSet = {{ $inventory->stocks_per_set }};
@@ -208,6 +258,5 @@
                 console.error('Error fetching budget details:', error);
             });
     }
-
-    </script>
+</script>
 @endsection

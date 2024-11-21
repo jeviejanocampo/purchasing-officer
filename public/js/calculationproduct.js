@@ -169,18 +169,6 @@ $(document).ready(function() {
 });
 
 
-function searchBudgets() {
-    const input = document.getElementById('searchBudget');
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById('budgetTableBody');
-    const tr = table.getElementsByTagName('tr');
 
-    for (let i = 0; i < tr.length; i++) {
-        const td = tr[i].getElementsByTagName('td')[0]; // Get the first cell (Budget ID)
-        if (td) {
-            const txtValue = td.textContent || td.innerText;
-            tr[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
-        }
-    }
-}
+
 

@@ -9,6 +9,11 @@ class Supplier extends Model
 {
     use HasFactory;
 
+    public function budgets()
+    {
+        return $this->hasMany(Budget::class, 'supplier_id');
+    }
+
     protected $fillable = [
         'supplier_name',
         'contact_person',

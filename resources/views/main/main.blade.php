@@ -11,6 +11,7 @@
     <style>
         body {
             background-color: #f8fafc; 
+            zoom: 90%;
         }
         .sidebar {
             background-color: #010224; 
@@ -71,10 +72,10 @@
                     <a href="{{ route('dashboard') }}" class="block">Dashboard</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('calculation') }}" class="block">Stock Procurement</a>
+                    <a href="{{ route('calculation') }}" class="block">Inventory Management</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('po.logs') }}" class="block">PO Logs</a>
+                    <a href="{{ route('po.logs') }}" class="block">Activity Logs</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
                     <a href="#" onclick="event.preventDefault(); confirmLogout();" class="block">Logout</a>

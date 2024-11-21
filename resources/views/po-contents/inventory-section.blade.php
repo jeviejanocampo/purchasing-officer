@@ -1,5 +1,9 @@
 <div id="inventory-section" class="section hidden bg-white rounded-lg shadow-md p-3 mb-5">
     <h1 class="text-xl font-bold mb-4">Inventory</h1>
+    @php
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId); 
+    @endphp
     <div class="bg-green-100 text-green-800 p-3 rounded-md mb-4">
         <strong>Note:</strong> When the product is already in the inventory, add details for 'Ready for Sale'
         <!-- Add the button below the note -->

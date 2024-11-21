@@ -112,6 +112,26 @@
 </div>
 
 <script>
+
+        // Implement the searchBudget function
+    function searchBudget() {
+        const searchValue = document.getElementById('budget-search').value.toLowerCase();
+        const rows = document.querySelectorAll('#budgetTableBody tr');
+
+        rows.forEach(row => {
+            const budgetIdCell = row.querySelector('td:nth-child(1)'); // Get the first column (Budget ID)
+            const budgetId = budgetIdCell ? budgetIdCell.textContent.toLowerCase() : '';
+            
+            // If the Budget ID matches the search term, show the row, otherwise hide it
+            if (budgetId.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+
     // Open modal to edit budget status
     function openEditStatusModal(budget) {
         document.getElementById('budgetId').value = budget.id;

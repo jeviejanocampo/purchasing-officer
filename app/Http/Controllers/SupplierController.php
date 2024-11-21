@@ -47,5 +47,41 @@ class SupplierController extends Controller
             'supplier' => $supplier,
         ]);
     }
+
+    public function edit($id)
+    {
+        // Fetch supplier by ID
+        $supplier = Supplier::findOrFail($id);
+
+        // Pass the supplier data to the view
+        return view('po-contents.edit-supplier', compact('supplier'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validate the request data
+        $request->validate([
+            'supplier_name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone_number' => 'required|string|max:15',
+            'email' => 'nullable|email|max:255',
+            'product_type' => 'nullable|string|max:255',
+            'status' => 'required|in:Active,Inactive',
+        ]);
+
+        try {
+            // Find the supplier and update its details
+            $supplier = Supplier::findOrFail($id);
+            $supplier->update($request->all());
+
+            // Redirect back with success message
+            return redirect()->route('edit-supplier', $id)
+                ->with('success', 'Supplier updated successfully.');
+        } catch (\Exception $e) {
+            // Redirect back with error message
+            return redirect()->route('edit-supplier', $id)
+                ->with('error', 'Failed to update supplier. Please try again.');
+        }
+    }
     
 }

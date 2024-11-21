@@ -11,6 +11,11 @@ class Budget extends Model
 
     protected $table = 'budget'; // Specify the table name if it's not plural
 
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
+
     protected $fillable = [
         'reference_code',
         'supplier_id',
