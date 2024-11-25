@@ -61,24 +61,26 @@
 
     <aside class="sidebar text-white w-full lg:w-56 lg:fixed lg:inset-y-0 lg:left-0 p-4 lg:p-6 lg:text-lg">
         <div class="text-center mb-6">
-            <img src="{{ asset('images/purchasing-officer.png') }}" alt="Profile Image" class="w-14 h-14 rounded-full mx-auto mb-2"> 
-            <div class="font-semibold">{{ $user->name ?? 'Guest' }}</div>
-            <div class="text-center mb-10">Purchasing Officer</div>
+            <img src="{{ asset('images/mstinio-logo.jpg') }}" alt="Profile Image" class="w-17 h-17 rounded-full mx-auto mb-2"> 
         </div>
-
         <nav>
             <ul class="flex flex-col space-y-2 lg:space-y-4 lg:block text-center lg:text-left">
-                <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('dashboard') }}" class="block">Dashboard</a>
+                <h1 style="color:white; font-size:20">PAGES</h1>
+                <li class="py-2 hover:bg-blue-1000 hover:rounded-lg transition-all flex items-center {{ request()->routeIs('dashboard') ? 'bg-white text-black-800' : '' }}" style="border-radius: 20px;">
+                    <img src="{{ request()->routeIs('dashboard') ? asset('images/dash11.png') : asset('images/dash1.png') }}" alt="Dashboard Icon" class="w-5 h-5 lg:w-6 lg:h-6 mr-2">
+                    <a href="{{ route('dashboard') }}" class="block {{ request()->routeIs('dashboard') ? 'text-black' : 'text-white' }}" style="font-size: 15px;">Dashboard</a>
                 </li>
-                <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('calculation') }}" class="block">Inventory Management</a>
+                <li class="py-2 hover:bg-blue-1000 hover:rounded-lg transition-all flex items-center {{ request()->routeIs('calculation') ? 'bg-white text-black-800' : '' }}" style="border-radius: 20px;">
+                    <img src="{{ request()->routeIs('calculation') ? asset('images/dash22.png') : asset('images/dash2.png') }}" alt="Inventory Icon" class="w-5 h-5 lg:w-6 lg:h-6 mr-2">
+                    <a href="{{ route('calculation') }}" class="block {{ request()->routeIs('calculation') ? 'text-black' : 'text-white' }}" style="font-size: 15px;">Inventory Management</a>
                 </li>
-                <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="{{ route('po.logs') }}" class="block">Activity Logs</a>
+                <li class="py-2 hover:bg-blue-1000 hover:rounded-lg transition-all flex items-center {{ request()->routeIs('po.logs') ? 'bg-white text-black-800' : '' }}" style="border-radius: 20px;">
+                    <img src="{{ request()->routeIs('po.logs') ? asset('images/dash33.png') : asset('images/dash3.png') }}" alt="Logs Icon" class="w-5 h-5 lg:w-6 lg:h-6 mr-2">
+                    <a href="{{ route('po.logs') }}" class="block {{ request()->routeIs('po.logs') ? 'text-black' : 'text-white' }}" style="font-size: 15px;">Activity Logs</a>
                 </li>
-                <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a href="#" onclick="event.preventDefault(); confirmLogout();" class="block">Logout</a>
+                <li class="py-2 hover:bg-blue-1000 hover:rounded-lg transition-all flex items-center {{ request()->routeIs('logout') ? 'bg-white text-black-800' : '' }}" style="border-radius: 20px;">
+                    <img src="{{ request()->routeIs('logout') ? asset('images/dash44.png') : asset('images/dash4.png') }}" alt="Logout Icon" class="w-5 h-5 lg:w-6 lg:h-6 mr-2">
+                    <a href="#" onclick="event.preventDefault(); confirmLogout();" class="block {{ request()->routeIs('logout') ? 'text-black' : 'text-white' }}" style="font-size: 15px;">Logout</a>
                 </li>
             </ul>
         </nav>
@@ -86,12 +88,20 @@
 
     <main class="pt-20 p-6 flex-1 lg:ml-56">
         <!-- Sticky Header with shadow and Notifications text on top-left -->
-        <header class="bg-white shadow-md fixed top-0 left-0 right-0 p-4 z-0 lg:ml-56 flex items-center h-12 no-print">
+        <header class="bg-white shadow-md fixed top-0 left-0 right-0 p-4 z-0 lg:ml-56 flex items-center h-12 no-print"  
+        style="border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;">
             <h1 class="text-xl font-semibold text-gray-800"></h1>
             <!-- Notification Bar Icon on the Top Right -->
-            <a href="#" onclick="event.preventDefault(); showNotificationModal();" class="notification-bar">
+            <div class="flex items-center space-x-4 ml-auto">
+                <div class="text-right">
+                    <div class="font-semibold">{{ $user->name ?? 'Guest' }}</div>
+                    <div class="text-sm text-gray-500">Purchasing Officer</div>
+                </div>
+                <img src="{{ asset('images/po.png') }}" alt="Profile Image" class="w-8 h-8 rounded-full">
+            </div>
+            <!-- <a href="#" onclick="event.preventDefault(); showNotificationModal();" class="notification-bar">
                 <img src="{{ asset('images/notification-bar.png') }}" alt="Notifications" class="w-8 h-8">
-            </a>
+            </a> -->
         </header>
 
         @yield('content')
@@ -101,6 +111,45 @@
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
         @csrf
     </form>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let isSoundUnlocked = false;
+
+            // Fetch low stock alerts
+            fetch('{{ route("lowStockAlerts") }}')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(product => {
+                        showToast(`Low stock alert! ${product.product_name} only has ${product.product_stocks} left.`);
+                    });
+                })
+                .catch(error => console.error('Error fetching low stock alerts:', error));
+        });
+
+        function showToast(message) {
+            // Play the sound
+
+            // Create the toast notification
+            const toast = document.createElement('div');
+            toast.className = 'bg-red-500 text-white px-4 py-2 rounded shadow flex items-center space-x-2';
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-xl font-bold hover:opacity-70">&times;</button>
+            `;
+
+                // Append to the container
+                const container = document.getElementById('toast-container');
+                container.appendChild(toast);
+
+                // Remove the toast after 5 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+    </script>
 
     <script src="{{ asset('js/notification-modal.js') }}"></script>
 

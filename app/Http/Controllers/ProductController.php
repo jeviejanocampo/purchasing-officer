@@ -156,6 +156,45 @@ class ProductController extends Controller
         }
     }
 
+    public function lowStockAlerts()
+    {
+        $lowStockProducts = Product::where('product_stocks', '<=', 30)->get();
+        return response()->json($lowStockProducts);
+    }
+
+    public function getLowStockNotifications()
+    {
+        $lowStockProducts = Product::where('product_stocks', '<=', 30)->get();
+        $notifications = $lowStockProducts->map(function($product) {
+            return [
+                'type' => 'Low Stock Alert',
+                'message' => "Low stock alert! Product ID: {$product->product_id} - {$product->product_name} only has {$product->product_stocks} left.",
+                'time' => now()->diffForHumans(),
+            ];
+        });
+
+        return response()->json($notifications);
+    }
+
+
+    public function updateStocks(Request $request, $id)
+    {
+        // Find the product by ID
+        $product = Product::findOrFail($id);
+        
+        // Validate the incoming request
+        $request->validate([
+            'product_stocks' => 'required|integer|min:0', // Ensure product_stocks is a valid integer and >= 0
+        ]);
+        
+        // Update the product's stock
+        $product->product_stocks = $request->input('product_stocks');
+        $product->save();
+
+        // Return a success response
+        return response()->json(['success' => true, 'message' => 'Stock updated successfully']);
+    }
+
     
 
     public function showProductDetails()
@@ -313,6 +352,15 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Product not found']);
         }
+    }
+
+    public function destroyProduct($id) {
+        $product = Product::find($id);
+        if ($product) {
+            $product->delete();
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false, 'message' => 'Product not found']);
     }
 
 

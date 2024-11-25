@@ -206,4 +206,21 @@ async function saveStatus() {
 
 
 
+function filterByIdentifier() {
+    const searchInput = document.getElementById('identifier-search').value.toLowerCase();
+    const tableRows = document.querySelectorAll('#inventory-table tbody tr');
+
+    tableRows.forEach(row => {
+        const identifierCell = row.querySelector('td:nth-child(2)'); // Assuming identifier is in the 2nd column
+        const identifierText = identifierCell.textContent.trim().toLowerCase();
+
+        // Check if the row matches the search query
+        if (identifierText.includes(searchInput)) {
+            row.style.display = ''; // Show row
+        } else {
+            row.style.display = 'none'; // Hide row
+        }
+    });
+}
+
 

@@ -4,52 +4,33 @@
             <h2 class="text-lg font-semibold">Notifications</h2>
             <button onclick="closeNotificationModal()" class="text-red-500">Close</button>
         </div>
-        <ul class="space-y-2">
-            <!-- Static Notifications -->
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Budget Update:</strong> New budget added for stock procurement.</p>
-                <span class="text-xs text-gray-500">2 hours ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Inventory Alert:</strong> Low stock on water bottles.</p>
-                <span class="text-xs text-gray-500">1 day ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>New Product:</strong> Fresh stock of canned goods arrived.</p>
-                <span class="text-xs text-gray-500">3 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>System Update:</strong> Maintenance scheduled for midnight.</p>
-                <span class="text-xs text-gray-500">4 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Supplier Update:</strong> New supplier for dairy products added.</p>
-                <span class="text-xs text-gray-500">5 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Delivery Alert:</strong> Upcoming delivery of new items tomorrow.</p>
-                <span class="text-xs text-gray-500">6 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Stock Update:</strong> Updated stock levels for imported goods.</p>
-                <span class="text-xs text-gray-500">7 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Delivery Alert:</strong> Upcoming delivery of new items tomorrow.</p>
-                <span class="text-xs text-gray-500">6 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Stock Update:</strong> Updated stock levels for imported goods.</p>
-                <span class="text-xs text-gray-500">7 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Delivery Alert:</strong> Upcoming delivery of new items tomorrow.</p>
-                <span class="text-xs text-gray-500">6 days ago</span>
-            </li>
-            <li class="bg-gray-100 p-3 rounded-lg shadow-sm">
-                <p><strong>Stock Update:</strong> Updated stock levels for imported goods.</p>
-                <span class="text-xs text-gray-500">7 days ago</span>
-            </li>
+        <ul id="notification-list" class="space-y-2">
+            <!-- Notifications will be loaded here dynamically -->
         </ul>
     </div>
 </div>
+
+<script>
+    function fetchLowStockNotifications() {
+        fetch('{{ route("lowStockNotifications") }}')
+            .then(response => response.json())
+            .then(notifications => {
+                const notificationList = document.getElementById('notification-list');
+                notificationList.innerHTML = '';  // Clear existing notifications
+
+                notifications.forEach(notification => {
+                    const notificationItem = document.createElement('li');
+                    notificationItem.className = 'bg-gray-100 p-3 rounded-lg shadow-sm';
+                    notificationItem.innerHTML = `
+                        <p><strong>${notification.type}:</strong> ${notification.message}</p>
+                        <span class="text-xs text-gray-500">${notification.time}</span>
+                    `;
+                    notificationList.appendChild(notificationItem);
+                });
+            })
+            .catch(error => console.error('Error fetching low stock notifications:', error));
+    }
+
+    // Call fetchLowStockNotifications when the page loads or when new stock notifications are needed
+    document.addEventListener('DOMContentLoaded', fetchLowStockNotifications);
+</script>

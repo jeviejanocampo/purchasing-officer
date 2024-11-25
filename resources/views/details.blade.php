@@ -137,6 +137,13 @@
             </tbody>
         </table>
     </div>
+    
+    <div class="mt-4 p-4 border rounded-lg bg-gray-50">
+        <h3 class="font-semibold text-lg">Summary Report</h3>
+        <p id="summary-report-note" class="text-sm text-gray-700 mt-2">
+            <!-- Summary note will be dynamically inserted here -->
+        </p>
+    </div>
 
 
     <h1 class="text-lg  mt-6 text-center">FOR THE OWNER</h1>
@@ -168,7 +175,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const budgetId = {{ $inventory->budget_identifier }};
+        const budgetId = {{ $inventory->budget_identifier }}; // Retrieve the budget identifier
         fetchBudgetDetails(budgetId);
     });
 
@@ -208,26 +215,27 @@
                     const supplierDetailsContainer = document.getElementById('supplier-details');
                     const supplier = data.data.supplier;
                     supplierDetailsContainer.innerHTML = `
-                   <table class="table-auto w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th class="font-semibold border px-2 py-1">Supplier Name</th>
-                                <th class="font-semibold border px-2 py-1">Phone</th>
-                                <th class="font-semibold border px-2 py-1">Email</th>
-                                <th class="font-semibold border px-2 py-1">Product Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border px-2 py-1">${supplier.supplier_name}</td>
-                                <td class="border px-2 py-1">${supplier.phone_number}</td>
-                                <td class="border px-2 py-1">${supplier.email}</td>
-                                <td class="border px-2 py-1">${supplier.product_type}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table class="table-auto w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="font-semibold border px-2 py-1">Supplier Name</th>
+                                    <th class="font-semibold border px-2 py-1">Phone</th>
+                                    <th class="font-semibold border px-2 py-1">Email</th>
+                                    <th class="font-semibold border px-2 py-1">Product Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border px-2 py-1">${supplier.supplier_name}</td>
+                                    <td class="border px-2 py-1">${supplier.phone_number}</td>
+                                    <td class="border px-2 py-1">${supplier.email}</td>
+                                    <td class="border px-2 py-1">${supplier.product_type}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     `;
-                    // Calculation logic
+
+                    // Perform Calculations
                     const unitCost = {{ $inventory->unit_cost }};
                     const piecesPerSet = {{ $inventory->pieces_per_set }};
                     const stocksPerSet = {{ $inventory->stocks_per_set }};
@@ -237,6 +245,7 @@
                     const totalCostStocks = (unitCostPerSet * stocksPerSet).toFixed(2);
                     const remainingBalance = (inputBudget - totalCostStocks).toFixed(2);
 
+                    // Update Calculation Result Table
                     document.getElementById('unit-cost-per-set').innerText = unitCostPerSet;
                     document.getElementById('total-cost-pieces').innerText = unitCostPerSet;
                     document.getElementById('calculation-pieces').innerText = unitCostPerSet;
@@ -244,18 +253,22 @@
                     document.getElementById('input-budget').innerText = inputBudget.toFixed(2);
                     document.getElementById('remaining-balance').innerText = remainingBalance;
 
-                    // Update Cost Breakdown
+                    // Update Cost Breakdown Table
                     document.getElementById('unit-cost-per-set-breakdown').innerText = unitCostPerSet;
                     document.getElementById('total-cost-pieces-breakdown').innerText = unitCostPerSet;
-                    document.getElementById('budget-breakdown').innerText = inputBudget.toFixed(2); // Display the input budget
+                    document.getElementById('budget-breakdown').innerText = inputBudget.toFixed(2);
                     document.getElementById('total-cost-sets-breakdown').innerText = totalCostStocks;
                     document.getElementById('remaining-balance-breakdown').innerText = remainingBalance;
+
+                    // Add Summary Note
+                    const summaryNote = `The total cost of stocks is ₱${totalCostStocks}, derived from a unit cost of ₱${unitCost} with ${piecesPerSet} pieces per set and ${stocksPerSet} sets. With an inputted budget of ₱${inputBudget}, the remaining balance is ₱${remainingBalance}.`;
+                    document.getElementById('summary-report-note').innerText = summaryNote;
                 } else {
-                    alert(data.message);
+                    alert(data.message); // Show error message if the response is not successful
                 }
             })
             .catch(error => {
-                console.error('Error fetching budget details:', error);
+                console.error('Error fetching budget details:', error); // Log any errors to the console
             });
     }
 </script>

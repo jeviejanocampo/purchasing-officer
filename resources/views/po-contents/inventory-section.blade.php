@@ -20,12 +20,14 @@
         <div class="w-1/4">
             <input 
                 type="text" 
-                id="budget-search" 
-                placeholder="Search by Budget Identifier" 
+                id="identifier-search" 
+                placeholder="Search by Identifier" 
                 class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200"
-                onkeyup="filterInventory()"
+                onkeyup="filterByIdentifier()"
             />
         </div>
+        
+
 
         <!-- Date Range Filter -->
         <div class="w-1/4 flex space-x-2">
@@ -94,7 +96,7 @@
                         <td class="border px-1 py-1">
                                 <!-- Edit quantity button -->
                                 <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">Edit Quantity</button>
-                            </td>
+                        </td>
                         <td class="border px-1 py-1">
                             <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
                             <button 

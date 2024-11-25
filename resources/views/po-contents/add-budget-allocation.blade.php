@@ -14,7 +14,8 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="mb-4 flex">
+    <div class="mb-4 flex items-center space-x-4">
+        <!-- Search Bar -->
         <input 
             type="text" 
             id="budget-search" 
@@ -22,7 +23,24 @@
             class="w-1/4 p-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
             onkeyup="searchBudget()"
         />
+        
+        <!-- Status Filter -->
+        <div class="flex-shrink-0">
+            <select 
+                id="status-filter" 
+                class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+                onchange="filterByStatusBudget()"
+            >
+                <option value="">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="Used">Used</option>
+                <option value="Closed">Closed</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
     </div>
+
+
 
     <button 
         onclick="location.reload()" 
@@ -31,53 +49,60 @@
     </button>
 
     <div class="overflow-y-auto h-200">
-        <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border px-1 py-1">Budget ID</th>
-                    <th class="border px-1 py-1">Balance</th>
-                    <th class="border px-1 py-1">Status</th>
-                    <th class="border px-1 py-1">Details</th>
-                    <th class="border px-1 py-1">Actions</th>
+    <table class="min-w-full border-collapse border border-gray-300 mt-4 text-sm">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="border px-1 py-1">Budget ID</th>
+                <th class="border px-1 py-1">Balance</th>
+                <th class="border px-1 py-1">Status</th>
+                <th class="border px-1 py-1">Details</th>
+                <th class="border px-1 py-1">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="budgetTableBody">
+            @php
+                $totalBalance = 0;
+            @endphp
+            @foreach ($budgets as $budget)
+                <tr>
+                    <td class="border px-1 py-1">{{ $budget->id }}</td>
+                    <td class="border px-1 py-1">
+                        @if($budget->remaining_balance == 0)
+                            <span class="text-red-500 font-semibold">Budget not used yet</span>
+                        @else
+                            ₱{{ number_format($budget->remaining_balance, 2) }}
+                            @php
+                                $totalBalance += $budget->remaining_balance;
+                            @endphp
+                        @endif
+                    </td>
+                    <td class="border px-1 py-1">{{ $budget->budget_status }}</td>
+                    <td class="border px-1 py-1">
+                        <button 
+                            onclick="openModal({{ json_encode($budget) }})" 
+                            class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs">
+                            View
+                        </button>
+                    </td>
+                    <td class="border px-1 py-1">
+                        <button 
+                            onclick="openEditStatusModal({{ json_encode($budget) }})" 
+                            class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition-colors duration-300 text-xs">
+                            Edit
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody id="budgetTableBody">
-                @php
-                    $totalBalance = 0;
-                @endphp
-                @foreach ($budgets as $budget)
-                    <tr>
-                        <td class="border px-1 py-1">{{ $budget->id }}</td>
-                        <td class="border px-1 py-1">
-                            @if($budget->remaining_balance == 0)
-                                <span class="text-red-500 font-semibold">Budget not used yet</span>
-                            @else
-                                ₱{{ number_format($budget->remaining_balance, 2) }}
-                                @php
-                                    $totalBalance += $budget->remaining_balance;
-                                @endphp
-                            @endif
-                        </td>
-                        <td class="border px-1 py-1">{{ $budget->budget_status }}</td>
-                        <td class="border px-1 py-1">
-                            <button 
-                                onclick="openModal({{ json_encode($budget) }})" 
-                                class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300 text-xs">
-                                View
-                            </button>
-                        </td>
-                        <td class="border px-1 py-1">
-                            <button 
-                                onclick="openEditStatusModal({{ json_encode($budget) }})" 
-                                class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition-colors duration-300 text-xs">
-                                Edit
-                            </button>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Links -->
+<div class="mt-4">
+    {{ $budgets->links() }} <!-- This will display pagination links -->
+</div>
+
+
 </div>
 
 <!-- Modal for Editing Status -->
@@ -130,6 +155,25 @@
             }
         });
     }
+
+        // Filter by Budget Status
+    function filterByStatusBudget() {
+        const selectedStatus = document.getElementById('status-filter').value.toLowerCase();
+        const rows = document.querySelectorAll('#budgetTableBody tr');
+
+        rows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(3)'); // Get the Status column
+            const status = statusCell ? statusCell.textContent.toLowerCase() : '';
+
+            // Show the row if it matches the selected status or if no status is selected
+            if (selectedStatus === '' || status.includes(selectedStatus)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
 
 
     // Open modal to edit budget status

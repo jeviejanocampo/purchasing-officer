@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
     <style>
         body {
+            zoom: 90%;
             background-color: #f8fafc; 
         }
         .sidebar {
@@ -71,10 +72,10 @@
                     <a class="block">Dashboard</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a class="block">Stock Procurement</a>
+                <a href="{{ route('view-orders') }}" class="block">View Orders</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
-                    <a  class="block">PO Logs</a>
+                    <a  class="block">Activity Logs</a>
                 </li>
                 <li class="py-2 hover:bg-blue-700 transition-colors">
                     <a href="#" onclick="event.preventDefault(); confirmLogout();" class="block">Logout</a>
@@ -100,6 +101,80 @@
     <form id="logout-form" action="{{ route('staff.logout') }}" method="POST" class="hidden">
         @csrf
     </form>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let lastChecked = new Date().toISOString(); // Initialize with the current timestamp
+        const displayedOrderIds = new Set(JSON.parse(localStorage.getItem('displayedOrderIds')) || []); // Load displayed orders from localStorage
+
+        // Polling function to fetch new pending orders from the server
+        function fetchPendingOrders() {
+            fetch('{{ route("pendingOrders") }}?last_checked=' + encodeURIComponent(lastChecked))
+                .then(response => response.json())
+                .then(data => {
+                    let newOrderFound = false;
+
+                    data.forEach(order => {
+                        if (!displayedOrderIds.has(order.order_id)) {
+                            // If the order is new (not displayed), show the toast
+                            showToast(`New order placed! Order ID: ${order.order_id}, Status: ${order.order_status}.`);
+                            displayedOrderIds.add(order.order_id); // Mark this order as displayed
+                            newOrderFound = true;
+                        }
+                    });
+
+                    // Save the updated displayedOrderIds to localStorage
+                    localStorage.setItem('displayedOrderIds', JSON.stringify(Array.from(displayedOrderIds)));
+
+                    // Update the lastChecked timestamp to the current time
+                    lastChecked = new Date().toISOString();
+
+                    // Play the sound only if a new order was found
+                    if (newOrderFound) {
+                        playTingSound();
+                    }
+                })
+                .catch(error => console.error('Error fetching pending orders:', error));
+        }
+
+        // Run the polling function every 10 seconds
+        setInterval(fetchPendingOrders, 10000); // 10000ms = 10 seconds
+
+        // Run the function once immediately after the page loads
+        fetchPendingOrders();
+    });
+
+    // Function to show toast notification
+    function showToast(message) {
+        // Create the toast element
+        const toast = document.createElement('div');
+        toast.className = 'bg-green-500 text-white px-4 py-2 rounded shadow flex items-center space-x-2';
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()" class="text-xl font-bold hover:opacity-70">&times;</button>
+        `;
+
+        // Append the toast to the container
+        const container = document.getElementById('toast-container');
+        container.appendChild(toast);
+
+        // Remove the toast after 5 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    // Function to play the ting sound
+    function playTingSound() {
+        const audio = new Audio('{{ asset("sounds/ting.mp3") }}');
+        audio.play().catch(error => {
+            console.error("Error playing sound:", error);
+        });
+    }
+    </script>
+
 
     <script src="{{ asset('js/notification-modal.js') }}"></script>
 

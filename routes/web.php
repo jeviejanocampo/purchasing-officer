@@ -1,16 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ExperimentController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\LogController;
 use Illuminate\Support\Facades\DB;
 use App\Models\Inventory; 
 use App\Models\Budget; 
+use App\Models\CheckoutDetail; 
 
 //Purchasing Officer Routes
 Route::get('/main', function () {
@@ -28,7 +31,7 @@ Route::get('/stock-procurement', function () {
     $inventoryCount = Inventory::count();
 
     // Fetch all budgets sorted by creation date
-    $budgets = Budget::orderBy('created_at', 'desc')->get();
+    $budgets = Budget::orderBy('created_at', 'desc')->paginate(5);
 
     // Fetch all inventories sorted by creation date
     $inventories = Inventory::orderBy('created_at', 'desc')->get();
@@ -153,6 +156,21 @@ Route::delete('/product/{id}/remove', [ProductController::class, 'destroy'])->na
 
 Route::get('/dashboard', [DashboardController::class, 'showDashboard'])->name('dashboard');
 
+Route::get('/low-stock-alerts', [ProductController::class, 'lowStockAlerts'])->name('lowStockAlerts');
+
+Route::get('/notifications/low-stock-alerts', [ProductController::class, 'getLowStockNotifications'])->name('lowStockNotifications');
+
+Route::post('/product/{id}/update-stocks', [ProductController::class, 'updateStocks']);
+
+Route::get('/expirement-tab', [ExperimentController::class, 'showTab'])->name('experiment.tab');
+
+Route::post('/update-checkout-status', [ExperimentController::class, 'updateStatus']);
+
+Route::get('/get-checkout-details/{checkoutId}', [ExperimentController::class, 'getCheckoutDetails']);
+
+Route::delete('/product/{id}/delete', [ProductController::class, 'destroyProduct'])->name('product.delete');
+
+
 // Staff Routes
 
 // Home route for staff main page
@@ -177,4 +195,19 @@ Route::post('/staff-logout', [AuthController::class, 'Stafflogout'])->name('staf
 
 
 
+//Order Management for Staff
+
+Route::get('/view-orders', [OrderController::class, 'viewOrders'])->name('view-orders');
+
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+
+Route::get('/staff/order-details/{checkout_id}', [OrderController::class, 'showOrderDetailsPage'])->name('staff.order.details');
+
+Route::post('/update-order-status/{orderId}', [OrderController::class, 'updateOrderStatus'])->name('update.order.status');
+
+Route::post('/edit-status', [OrderController::class, 'changeOrderStatus'])->name('edit-status');
+
+Route::get('/orders/{orderId}/status', [OrderController::class, 'getOrderStatus']);
+
+Route::get('/orders/pending-alerts', [OrderController::class, 'getPendingOrders'])->name('pendingOrders');
 
