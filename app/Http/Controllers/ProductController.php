@@ -23,23 +23,35 @@ class ProductController extends Controller
             'stocks_per_set' => 'required|integer|min:1',
             'expiration_date' => 'required|date|after:today',
         ]);
-
+    
+        // Calculate the total cost based on the provided data
         $unitCost = $request->unit_cost;
         $piecesPerSet = $request->pieces_per_set;
         $stocksPerSet = $request->stocks_per_set;
         $totalCost = $unitCost * $piecesPerSet * $stocksPerSet;
-
+    
+        // Retrieve the budget using the identifier
         $budget = Budget::find($request->budget_identifier);
+    
+        // Get the PurchasingOfficer information from session
         $userId = session('user_id');
-
+        $user = \App\Models\User::find($userId);
+        $PurchasingOfficerName = $user ? $user->name : 'Guest'; // Default to 'Guest' if no user is found
+        $PurchasingOfficerId = $user ? $user->id : 'N/A'; // Default to 'N/A' if no user is found
+    
+        // Log the action of creating an inventory item
         $this->logAction('Creating inventory item', [
             'user_id' => $userId,
             'budget_id' => $request->budget_identifier,
             'product_name' => $request->product_name,
             'total_cost' => $totalCost,
             'available_budget' => $budget->input_budget,
+            'PurchasingOfficer_id' => $PurchasingOfficerId,
+            'PurchasingOfficer_name' => $PurchasingOfficerName,
+            'role' => 'PurchasingOfficer', // Default role for the PurchasingOfficer
         ]);
-
+    
+        // Check if the total cost exceeds the available budget
         if ($totalCost > $budget->input_budget) {
             $this->logAction('Total cost exceeds available budget', [
                 'user_id' => $userId,
@@ -52,7 +64,8 @@ class ProductController extends Controller
                 'message' => 'Total cost exceeds available budget.',
             ], 400);
         }
-
+    
+        // Create the inventory item
         Inventory::create([
             'budget_identifier' => $request->budget_identifier,
             'product_id' => $request->product_id,
@@ -62,18 +75,23 @@ class ProductController extends Controller
             'stocks_per_set' => $request->stocks_per_set,
             'exp_date' => $request->expiration_date,
         ]);
-
+    
+        // Update the budget's remaining balance and status
         $budget->remaining_balance = $budget->input_budget - $totalCost;
         $budget->budget_status = 'Budget Used'; // Update budget status
         $budget->save();
-
+    
+        // Log the action of adding the product and updating the budget
         $this->logAction('Product added and budget updated', [
             'user_id' => $userId,
             'budget_id' => $request->budget_identifier,
             'product_name' => $request->product_name,
             'remaining_balance' => $budget->remaining_balance,
+            'PurchasingOfficer_id' => $PurchasingOfficerId,
+            'PurchasingOfficer_name' => $PurchasingOfficerName,
+            'role' => 'PurchasingOfficer', // Default role for the PurchasingOfficer
         ]);
-
+    
         return response()->json([
             'success' => true,
             'message' => 'Product added and budget updated successfully.',
@@ -83,6 +101,33 @@ class ProductController extends Controller
             ],
         ]);
     }
+    
+    // Private method to handle logging actions to the logs table
+    private function logAction($message, $data)
+    {
+        // Get the PurchasingOfficer information from session (we don't need to fetch user again)
+        $PurchasingOfficerId = $data['PurchasingOfficer_id'] ?? 'N/A';
+        $PurchasingOfficerName = $data['PurchasingOfficer_name'] ?? 'Guest';
+        $role = $data['role'] ?? 'PurchasingOfficer'; // Default to 'PurchasingOfficer' if not passed
+    
+        // Combine the message with additional data
+        $logData = json_encode(array_merge([
+            'message' => $message,
+            'PurchasingOfficer_id' => $PurchasingOfficerId,
+            'PurchasingOfficer_name' => $PurchasingOfficerName,
+            'role' => $role, // Include the role in the log data
+        ], $data));
+    
+        // Insert the log into the logs table, including the role
+        Log::create([
+            'log_data' => $logData,
+            'role' => $role, // Ensure the role is inserted into the role column
+        ]);
+    
+        // Optional: Log to Laravel's default log
+        FacadeLog::info($message, $data);
+    }
+    
 
     public function create()
     {
@@ -106,14 +151,6 @@ class ProductController extends Controller
 
         $isUsed = Inventory::where('budget_identifier', $request->budget_identifier)->exists();
         return response()->json(['is_used' => $isUsed]);
-    }
-
-    // Private method to handle logging actions to the logs table
-    private function logAction($message, $data)
-    {
-        $logData = json_encode(array_merge(['message' => $message], $data)); // Convert to JSON format
-        Log::create(['log_data' => $logData]); // Insert into logs table
-        FacadeLog::info($message, $data); // Optional: Also log to Laravel's default log
     }
 
     public function addRestockDetails(Request $request)

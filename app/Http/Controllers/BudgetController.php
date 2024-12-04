@@ -12,14 +12,22 @@ class BudgetController extends Controller
 {
     public function store(Request $request)
     {
+        // Validate the incoming request data
         $validatedData = $request->validate([
             'reference_code' => 'required|string|max:255',
             'product_to_buy' => 'required|string|max:255',
             'input_budget' => 'required|numeric|min:0',
             'supplier_id' => 'required|exists:suppliers,id', // Ensure the supplier exists
         ]);
-
+    
+        // Get the PurchasingOfficer information from session
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId);
+        $PurchasingOfficerName = $user ? $user->name : 'Guest'; // Default to 'Guest' if no user is found
+        $PurchasingOfficerId = $user ? $user->id : 'N/A'; // Default to 'N/A' if no user is found
+    
         try {
+            // Create the Budget record
             $budget = new Budget([
                 'reference_code' => $validatedData['reference_code'],
                 'product_to_buy' => $validatedData['product_to_buy'],
@@ -28,18 +36,21 @@ class BudgetController extends Controller
                 'remaining_balance' => $validatedData['input_budget'],
                 'supplier_id' => $validatedData['supplier_id'], // Save the selected supplier
             ]);
-
+    
             $budget->save();
-
+    
             // Log the budget creation action
             $this->logAction('Budget created', [
-                'user_id' => session('user_id'),
+                'user_id' => $userId,
                 'reference_code' => $budget->reference_code,
                 'product_to_buy' => $budget->product_to_buy,
                 'input_budget' => $budget->input_budget,
                 'supplier_id' => $budget->supplier_id,
+                'PurchasingOfficer_id' => $PurchasingOfficerId,
+                'PurchasingOfficer_name' => $PurchasingOfficerName,
+                'role' => 'PurchasingOfficer', // Default role for the PurchasingOfficer
             ]);
-
+    
             return response()->json([
                 'success' => true,
                 'message' => 'Budget added successfully!',
@@ -57,6 +68,33 @@ class BudgetController extends Controller
             ], 500);
         }
     }
+    
+    // Private method to handle logging actions to the logs table
+    private function logAction($message, $data)
+    {
+        // Get the PurchasingOfficer information from session (we don't need to fetch user again)
+        $PurchasingOfficerId = $data['PurchasingOfficer_id'] ?? 'N/A';
+        $PurchasingOfficerName = $data['PurchasingOfficer_name'] ?? 'Guest';
+        $role = $data['role'] ?? 'PurchasingOfficer'; // Default to 'PurchasingOfficer' if not passed
+    
+        // Combine the message with additional data
+        $logData = json_encode(array_merge([
+            'message' => $message,
+            'PurchasingOfficer_id' => $PurchasingOfficerId,
+            'PurchasingOfficer_name' => $PurchasingOfficerName,
+            'role' => $role, // Include the role in the log data
+        ], $data));
+    
+        // Insert the log into the logs table, including the role
+        Log::create([
+            'log_data' => $logData,
+            'role' => $role, // Ensure the role is inserted into the role column
+        ]);
+    
+        // Optional: Log to Laravel's default log
+        FacadeLog::info($message, $data);
+    }
+    
 
 
     public function showAddProductForm()
@@ -90,12 +128,6 @@ class BudgetController extends Controller
         ]);
     }
 
-    private function logAction($message, $data)
-    {
-        $logData = json_encode(array_merge(['message' => $message], $data)); 
-        Log::create(['log_data' => $logData]); 
-        FacadeLog::info($message, $data); 
-    }
 
     public function create()
     {

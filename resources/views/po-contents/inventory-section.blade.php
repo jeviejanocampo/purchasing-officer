@@ -53,7 +53,7 @@
                     <th class="border px-1 py-1">Inventory ID</th>
                     <th class="border px-1 py-1">Budget ID</th>
                     <th class="border px-1 py-1">Product Name</th>
-                    <th class="border px-1 py-1">Unit Cost</th>
+                    <!-- <th class="border px-1 py-1">Unit Cost</th> -->
                     <th class="border px-1 py-1">Pieces per Set</th>
                     <th class="border px-1 py-1">Stocks per Set</th>
                     <th class="border px-1 py-1">Created At</th>
@@ -78,7 +78,7 @@
                             </button>
                         </td>
                         <td class="border px-1 py-1">{{ $inventory->product_name }}</td>
-                        <td class="border px-1 py-1">₱{{ number_format($inventory->unit_cost, 2) }}</td>
+                        <!-- <td class="border px-1 py-1">₱{{ number_format($inventory->unit_cost, 2) }}</td> -->
                         <td class="border px-1 py-1">{{ $inventory->pieces_per_set }}</td>
                         <td class="border px-1 py-1 relative">
                             {{ $inventory->stocks_per_set }}
@@ -95,8 +95,9 @@
                         <td class="border px-1 py-1">{{ $inventory->exp_date }}</td>
                         <td class="border px-1 py-1">
                                 <!-- Edit quantity button -->
-                                <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">Edit Quantity</button>
-                        </td>
+                                <button class="ml-1 bg-yellow-500 text-white rounded-md px-1 py-1 text-sm" onclick="openEditQuantityModal(${inventory.id}, ${inventory.stocks_per_set})">✎</button>
+                                </td>
+                                
                         <td class="border px-1 py-1">
                             <span id="set-status-{{ $inventory->id }}">{{ $inventory->set_status }}</span>
                             <button 

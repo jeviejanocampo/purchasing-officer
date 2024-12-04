@@ -49,7 +49,7 @@
                     <input type="password" name="pin" id="pin" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="Enter your PIN">
                 </div>
                 <button type="submit" class="mt-6 block w-full text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">Login</button>
-                <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline">Forgot PIN?</p>
+                <!-- <p class="mt-2 text-sm text-blue-600 cursor-pointer hover:underline">Forgot PIN?</p> -->
             </form>
         </div>
 

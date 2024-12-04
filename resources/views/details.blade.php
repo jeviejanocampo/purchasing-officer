@@ -196,6 +196,7 @@
                                     <th class="font-semibold border px-2 py-1">Input Budget</th>
                                     <th class="font-semibold border px-2 py-1">Remaining Balance</th>
                                     <th class="font-semibold border px-2 py-1">Created At</th>
+                                      <th class="font-semibold border px-2 py-1">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -206,6 +207,7 @@
                                     <td class="border px-2 py-1">₱${parseFloat(data.data.input_budget).toFixed(2)}</td>
                                     <td class="border px-2 py-1">₱${parseFloat(data.data.remaining_balance).toFixed(2)}</td>
                                     <td class="border px-2 py-1">${data.data.created_at}</td>
+                                    <td class="border px-2 py-1">${data.data.budget_status}</td>
                                 </tr>
                             </tbody>
                         </table>

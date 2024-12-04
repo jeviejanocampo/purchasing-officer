@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExperimentController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
@@ -77,7 +78,9 @@ Route::post('/pin-login', [AuthController::class, 'pinLogin'])->name('pin.login'
 
 Route::get('/budgets/{id}', [BudgetController::class, 'showBudgetDetails']);
 
-Route::get('/po-logs', [LogController::class, 'index'])->name('po.logs');
+Route::get('/staff-logs', [LogController::class, 'StaffOfficerLogs'])->name('staff.logs');
+
+Route::get('/po-logs', [LogController::class, 'PurchasingOfficerLogs'])->name('po.logs');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -194,10 +197,13 @@ Route::post('/staff-logout', [AuthController::class, 'Stafflogout'])->name('staf
 
 
 
-
 //Order Management for Staff
 
 Route::get('/view-orders', [OrderController::class, 'viewOrders'])->name('view-orders');
+
+Route::get('/check-for-pending-orders', [OrderController::class, 'checkForPendingOrders']);
+
+Route::get('/fetch-orders', [OrderController::class, 'fetchOrders'])->name('fetch-orders');
 
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
@@ -210,4 +216,9 @@ Route::post('/edit-status', [OrderController::class, 'changeOrderStatus'])->name
 Route::get('/orders/{orderId}/status', [OrderController::class, 'getOrderStatus']);
 
 Route::get('/orders/pending-alerts', [OrderController::class, 'getPendingOrders'])->name('pendingOrders');
+
+Route::get('/orders/overview', [OrderController::class, 'overview'])->name('orders.overview');
+
+
+
 

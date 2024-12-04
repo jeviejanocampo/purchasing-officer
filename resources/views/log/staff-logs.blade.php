@@ -8,11 +8,11 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-@extends('main.main') 
+@extends('staff.home.staff-main')
 
 @section('content')
     <div class="container mx-auto p-5">
-        <h1 class="text-3xl font-bold mb-4">Purchase Officer Activity Logs</h1>
+        <h1 class="text-3xl font-bold mb-4">Staff Officer Activity Logs</h1>
 
         <!-- Search bar, date filter, and category filter section -->
         <div class="mb-5 flex justify-between items-center">
@@ -22,9 +22,9 @@
                 <input type="date" id="end-date" class="p-2 border border-gray-300 rounded-md shadow-sm">
                 <select id="category-filter" class="p-2 bg-white border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Category</option>
-                    <option value="budget_created" data-keywords="Budget created">Budget Created</option>
-                    <option value="inventory" data-keywords="Creating inventory item,product_name,total_cost">Inventory</option>
-                    <option value="product_added" data-keywords="Product added,Product added and budget updated">Product Added</option>
+                    <option value="order_status_update" data-keywords="Order status updated successfully">Order Status Updates</option>
+                    <!-- <option value="inventory" data-keywords="Creating inventory item,product_name,total_cost">Inventory</option>
+                    <option value="product_added" data-keywords="Product added,Product added and budget updated">Product Added</option> -->
                 </select>
                 <button id="clear-button" class="p-2 bg-gray-500 text-white rounded-md shadow-sm">Clear</button>
                 <button id="show-all-button" class="p-2 bg-gray-700 text-white rounded-md shadow-sm">Show All</button>

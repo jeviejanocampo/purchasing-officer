@@ -29,7 +29,6 @@ function updateInventoryTable(inventories) {
                     <button class="ml-1 bg-blue-500 text-white rounded-md px-1 py-1 text-sm" onclick="fetchBudgetDetails(${inventory.budget_identifier})">View</button>
                 </td>
                 <td class="border px-1 py-1">${inventory.product_name}</td>
-                <td class="border px-1 py-1">₱${parseFloat(inventory.unit_cost).toFixed(2)}</td>
                 <td class="border px-1 py-1">${inventory.pieces_per_set}</td>
                 <td class="border px-1 py-1 relative">
                     ${inventory.stocks_per_set} 
@@ -64,8 +63,7 @@ function updateInventoryTable(inventories) {
     });
 }
 
-// Fetch inventory data every 3 seconds
-setInterval(fetchInventory, 5000);
+
 
 let selectedInventoryId = null;
 

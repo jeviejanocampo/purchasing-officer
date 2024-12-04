@@ -82,6 +82,8 @@
         </form>
     </div>   
 
+    <!-- inventory.js code -->
+    <!-- <td class="border px-1 py-1">₱${parseFloat(inventory.unit_cost).toFixed(2)}</td> -->
 
     <!-- PIN Form -->
     <div id="pin-form" style="display:none;">

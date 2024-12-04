@@ -21,11 +21,11 @@
     </div>
 
     <!-- Card 4 -->
-    <div class="bg-gray-500 text-white p-4 rounded-lg shadow">
+    <!-- <div class="bg-gray-500 text-white p-4 rounded-lg shadow">
         <h3 class="font-bold text-lg">Products Expiring Soon</h3>
         <p class="text-2xl">2</p>
         <p>Date: {{ now()->format('Y-m-d') }}</p> <!-- Dynamic date -->
-    </div>
+    </div> -->
 
     <!-- Optional Cards (Uncomment to use) -->
     <!-- Card 5 -->

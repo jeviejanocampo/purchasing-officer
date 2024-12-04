@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Checkout;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\View;
 use App\Models\CheckoutDetail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log as FacadeLog;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    // This method handles the /view-orders route
     public function viewOrders()
     {
         // Update the order status to 'Returned' for orders whose order_date has passed
@@ -20,14 +22,95 @@ class OrderController extends Controller
             ->whereNotIn('order_status', ['COMPLETED', 'REJECTED', 'CANCELLED'])  // Exclude orders with these statuses
             ->where('order_date', '<', now())  // Compare order_date with the current date and time
             ->update(['order_status' => 'Returned']);  // Set status to 'Returned'
-
+    
+        // Automatically set orders older than 3 days to 'Cancelled', excluding 'Completed' and 'Rejected' statuses
+        Order::where('order_status', '!=', 'Cancelled')  // Ensure we don't update already cancelled orders
+            ->whereNotIn('order_status', ['COMPLETED', 'REJECTED'])  // Exclude 'Completed' and 'Rejected' statuses
+            ->where('order_date', '<', now()->subDays(3))  // Check if the order_date is older than 3 days
+            ->update(['order_status' => 'Cancelled']);  // Set status to 'Cancelled'
+    
         // Fetch orders with their associated checkout details
         $orders = Order::with('checkout')
             ->orderBy('order_date', 'desc')  // Order by 'order_date' in descending order
-            ->paginate(6);  // 5 orders per page
+            ->paginate(15);  // 15 orders per page
+    
+        // Fetch active customers
+        $users = DB::table('user')
+            ->select('user_id', 'user_fullname', 'user_email', 'user_number', 'user_bdate', 'created_at')
+            ->get();
+    
+        // Count Pending orders
+        $pendingOrdersCount = Order::where('order_status', 'Pending')->count();
+    
+        // Return the view with fetched data and pending count
+        return view('staff.contents.order-management', compact('orders', 'users', 'pendingOrdersCount'));
+    }
 
-        // Return the view with fetched data
-        return view('staff.contents.order-management', compact('orders'));
+    public function checkForPendingOrders()
+    {
+        // Log when the request is made
+        Log::info('AJAX request received to check for new PENDING orders.');
+
+        // Check for orders created in the last 30 seconds with PENDING status
+        $recentPendingOrders = Order::where('order_status', 'PENDING')
+            ->where('created_at', '>=', now()->subSeconds(30))
+            ->get();
+
+        // Log the number of new PENDING orders
+        Log::info('Number of new PENDING orders: ' . $recentPendingOrders->count());
+
+        // Return a JSON response with the result
+        return response()->json([
+            'newPendingOrders' => $recentPendingOrders->count() > 0
+        ]);
+    }
+
+
+    
+
+
+    public function updateCheckoutStatuses()
+    {
+        // Update the 'status' in the 'checkout_details' table to 'Cancelled' for records older than 3 days
+        // and where the 'status' is not already 'Cancelled'
+        DB::table('checkout_details')
+            ->where('status', '!=', 'Cancelled')  // Ensure we don't update already cancelled records
+            ->where('created_at', '<', now()->subDays(3))  // Check if 'created_at' is older than 3 days
+            ->update(['status' => 'Cancelled']);  // Set 'status' to 'Cancelled'
+
+        // Update the 'checkout_status' in the 'checkout' table to 'Cancelled' for records older than 3 days
+        // and where the 'checkout_status' is not already 'Cancelled'
+        DB::table('checkout')
+            ->where('checkout_status', '!=', 'Cancelled')  // Ensure we don't update already cancelled records
+            ->where('created_at', '<', now()->subDays(3))  // Check if 'created_at' is older than 3 days
+            ->update(['checkout_status' => 'Cancelled']);  // Set 'checkout_status' to 'Cancelled'
+
+        // Optionally, you can return some feedback or logs
+        return response()->json(['message' => 'Checkout statuses updated successfully']);
+    }
+
+
+    
+
+   
+    public function overview()
+    {
+        $today = Carbon::today();
+
+        $ordersToday = Order::whereDate('created_at', $today)->count();
+
+        $pendingOrders = Order::where('order_status', 'Pending')->count();
+
+        $deliveredOrders = Order::where('order_status', 'Delivered')->count();
+
+        $cancelledOrders = Order::where('order_status', 'Cancelled')->count();
+
+        return response()->json([
+            'orders_today' => $ordersToday,
+            'pending_orders' => $pendingOrders,
+            'delivered_orders' => $deliveredOrders,
+            'cancelled_orders' => $cancelledOrders,
+        ]);
     }
 
 
@@ -109,53 +192,208 @@ class OrderController extends Controller
             'deliveryAddress' => $deliveryAddress
         ]);
     }
+
+    private function logAction($message, $data)
+    {
+        // Get the staff information from session
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId);
+    
+        // Default values if no user is found
+        $staffName = $user ? $user->name : 'Guest';
+        $staffId = $user ? $user->id : 'N/A';
+        $role = $user ? $user->role : 'staff'; // Default to 'staff' if no user is found
+    
+        // Combine the message with additional data
+        $logData = json_encode(array_merge([
+            'message' => $message,
+            'staff_id' => $staffId,
+            'staff_name' => $staffName,
+            'role' => $role, // Include the role in the log data
+        ], $data)); // Convert to JSON format
+    
+        // Insert into the logs table with the role
+        \App\Models\Log::create([
+            'log_data' => $logData,
+            'role' => $role // Insert the staff role into the 'role' column
+        ]);
+    
+        // Optional: Log the message and data to Laravel's log files
+        Log::info($message, $data);
+    }
+    
     
 
-
+    
     public function updateOrderStatus(Request $request, $orderId)
     {
-        // Log the incoming request for debugging
-        Log::info("Update order status request received. Order ID: $orderId, Status: " . $request->input('order_status'));
+        // Get the staff information from session
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId);
+        $staffName = $user ? $user->name : 'Guest'; // Default to 'Guest' if no user is found
+        $staffId = $user ? $user->id : 'N/A'; // Default to 'N/A' if no user is found
+
+        // Validate order status input
+        $request->validate([
+            'order_status' => 'required|string',
+        ]);
 
         // Find the order
         $order = Order::find($orderId);
-
         if (!$order) {
-            Log::error("Order with ID $orderId not found.");
-            return response()->json(['success' => false, 'error' => 'Order not found'], 404);
+            // Log order not found
+            $this->logAction('Order not found', [
+                'order_id' => $orderId,
+                'staff_id' => $staffId,
+                'staff_name' => $staffName,
+                'role' => 'staff', // Default role for the staff
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Order not found',
+            ], 404);
         }
 
-        // Update the order status
-        $order->order_status = $request->input('order_status');
-        if ($order->save()) {
-            Log::info("Order status updated successfully. Order ID: $orderId, New Status: " . $order->order_status);
-            return response()->json(['success' => true]);
-        } else {
-            Log::error("Failed to update order status for Order ID: $orderId.");
-            return response()->json(['success' => false, 'error' => 'Failed to update order status'], 500);
+        // Find associated checkout
+        $checkout = $order->checkout;
+
+        // Start a database transaction
+        DB::beginTransaction();
+
+        try {
+            // Update the order status
+            $order->order_status = $request->input('order_status');
+            $order->save();
+
+            // Sync with the checkout status if checkout exists
+            if ($checkout) {
+                $checkout->checkout_status = $request->input('order_status');
+                $checkout->save();
+
+                // Update all associated checkout details
+                $checkoutDetails = $checkout->checkoutDetails; // Use relationship to fetch details
+                foreach ($checkoutDetails as $detail) {
+                    $detail->status = $request->input('order_status');
+                    $detail->save();
+                }
+            }
+
+            // Commit transaction
+            DB::commit();
+
+            // Log successful update
+            $this->logAction('Order, Checkout, and CheckoutDetails statuses updated successfully', [
+                'order_id' => $orderId,
+                'checkout_id' => $checkout ? $checkout->checkout_id : null,
+                'new_status' => $order->order_status,
+                'staff_id' => $staffId,
+                'staff_name' => $staffName,
+                'role' => 'staff', // Default role for the staff
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Order, Checkout, and CheckoutDetails statuses updated.']);
+        } catch (\Exception $e) {
+            // Rollback transaction on error
+            DB::rollBack();
+
+            // Log failure
+            $this->logAction('Failed to update statuses', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+                'staff_id' => $staffId,
+                'staff_name' => $staffName,
+                'role' => 'staff',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update statuses.',
+            ], 500);
         }
     }
+
 
     public function changeOrderStatus(Request $request)
     {
-        Log::info("Edit order status request received. Order ID: " . $request->input('order_id') . ", Status: " . $request->input('order_status'));
+        // Validate the input
+        $validated = $request->validate([
+            'order_id' => 'required|exists:orders,order_id',
+            'order_status' => 'required|string',
+        ]);
 
-        $order = Order::find($request->input('order_id'));
+        // Retrieve user information
+        $userId = session('user_id');
+        $user = \App\Models\User::find($userId);
+        $staffName = $user ? $user->name : 'Guest';
+        $staffId = $user ? $user->id : 'N/A';
+        $role = $user ? $user->role : 'staff';
 
+        // Find the order and its associated checkout
+        $order = Order::find($validated['order_id']);
         if (!$order) {
-            Log::error("Order with ID " . $request->input('order_id') . " not found.");
+            $this->logAction('Order not found', ['order_id' => $validated['order_id'], 'staff_id' => $staffId]);
             return response()->json(['success' => false, 'error' => 'Order not found'], 404);
         }
 
-        $order->order_status = $request->input('order_status');
-        if ($order->save()) {
-            Log::info("Order status updated successfully. Order ID: " . $request->input('order_id') . ", New Status: " . $order->order_status);
-            return response()->json(['success' => true]);
-        } else {
-            Log::error("Failed to update order status for Order ID: " . $request->input('order_id'));
-            return response()->json(['success' => false, 'error' => 'Failed to update order status'], 500);
+        $checkout = $order->checkout; // Use relationship to fetch associated checkout
+
+        // Start a database transaction to ensure all updates succeed
+        DB::beginTransaction();
+
+        try {
+            // Update the order status
+            $order->order_status = $validated['order_status'];
+            $order->save();
+
+            // Sync with the checkout status if checkout exists
+            if ($checkout) {
+                $checkout->checkout_status = $validated['order_status'];
+                $checkout->save();
+
+                // Update all associated checkout details
+                $checkoutDetails = $checkout->checkoutDetails; // Use relationship to fetch details
+                foreach ($checkoutDetails as $detail) {
+                    $detail->status = $validated['order_status'];
+                    $detail->save();
+                }
+            }
+
+            // Commit transaction
+            DB::commit();
+
+            // Log successful update
+            $this->logAction('Order, Checkout, and CheckoutDetails statuses updated successfully', [
+                'order_id' => $order->order_id,
+                'checkout_id' => $checkout ? $checkout->checkout_id : null,
+                'order_status' => $order->order_status,
+                'staff_id' => $staffId,
+                'staff_name' => $staffName,
+                'role' => $role,
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Order, Checkout, and CheckoutDetails statuses updated.']);
+        } catch (\Exception $e) {
+            // Rollback transaction on error
+            DB::rollBack();
+
+            // Log the error
+            $this->logAction('Failed to update statuses', [
+                'order_id' => $order->order_id,
+                'error' => $e->getMessage(),
+                'staff_id' => $staffId,
+                'staff_name' => $staffName,
+                'role' => $role,
+            ]);
+
+            return response()->json(['success' => false, 'error' => 'Failed to update statuses.'], 500);
         }
     }
+
+    
+
+    
+
 
 
     public function getOrderStatus($orderId)
@@ -178,8 +416,8 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        // Initialize the lastChecked variable with the current time minus 10 minutes.
-        $this->lastChecked = now()->subMinutes(10);
+        $pendingOrdersCount = Order::where('order_status', 'Pending')->count();
+        view()->share('pendingOrdersCount', $pendingOrdersCount);
     }
 
     public function getPendingOrders(Request $request)

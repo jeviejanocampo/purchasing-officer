@@ -9,5 +9,11 @@ class Log extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['log_data']; // Allow mass assignment for log_data
+    protected $table = 'logs';
+
+    
+    protected $fillable = [
+    'role', 
+    'log_data'
+    ];
 }

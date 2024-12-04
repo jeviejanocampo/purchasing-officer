@@ -54,12 +54,17 @@
     <select id="section-selector" class="block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring focus:ring-indigo-200" onchange="toggleSections()">
         <optgroup label="Orders">
             <option value="view-orders">View Orders</option>
-            <option value="view-staff">View Staff</option>
+            <option value="product-details">Product Details</option>
+            <option value="view-customers">View Customer Details</option>
         </optgroup>
     </select>
 </div>
 
+@include('staff.staff-contents.product-details-section-viewing')
+
 @include('staff.staff-contents.view-orders')
+
+@include('staff.staff-contents.view-customers')
 
 
 <script src="{{ asset('js/selection.js') }}"></script>

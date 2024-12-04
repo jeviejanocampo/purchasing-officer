@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth; 
+use App\Models\Order;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
@@ -44,7 +45,7 @@ class AuthController extends Controller
         }
     
         // If the request is a GET request, return the registration form view
-        return view('po-login.po-login');
+        return view('view-orders');
     }
     
 
@@ -58,26 +59,32 @@ class AuthController extends Controller
         $user = User::where('pin', $request->pin)->first();
 
         if ($user) {
-            // Check if the user's status is confirmed
+            // Check if the user's status is 'CONFIRMED'
             if ($user->users_status === 'CONFIRMED') {
-                // Log the user in
-                Auth::login($user);
+                // Check if the user's role is 'purchasing-officer'
+                if ($user->role === 'purchasing-officer') {
+                    // Log the user in
+                    Auth::login($user);
 
-                // Store the user ID in the session
-                session(['user_id' => $user->id]);
+                    // Store the user ID in the session
+                    session(['user_id' => $user->id]);
 
-                // Log the successful login action
-                Log::info('User logged in:', ['user_id' => $user->id]);
+                    // Log the successful login action
+                    Log::info('User logged in via PIN:', ['user_id' => $user->id]);
 
-                // Return a JSON response for successful login
-                return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+                    // Return a JSON response for successful login
+                    return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+                } else {
+                    // If the user's role is not 'purchasing-officer'
+                    return response()->json(['success' => false, 'message' => 'Access denied. You do not have the required role.']);
+                }
             } else {
-                // If the user's status is not confirmed, return an error response
-                return response()->json(['success' => false, 'message' => 'Please wait for confirmation first or contact the admin with contact number 094532322/3232332.']);
+                // If the user's status is not confirmed
+                return response()->json(['success' => false, 'message' => 'Please wait for confirmation first or contact the admin at 094532322/3232332.']);
             }
         }
 
-        // If the PIN is incorrect, return an error response
+        // If the PIN is incorrect
         return response()->json(['success' => false, 'message' => 'Invalid PIN! Please try again.']);
     }
 
@@ -123,34 +130,37 @@ class AuthController extends Controller
         $request->validate([
             'pin' => 'required|digits:5',
         ]);
-    
+
         // Authenticate the user by PIN (assuming PIN is stored in the database)
         $user = User::where('pin', $request->pin)->first();
-    
+
         // Check if user exists
         if ($user) {
             // Check if the user role is 'staff'
             if ($user->role === 'staff') {
                 // Log in the user
                 Auth::login($user);
-    
+
                 // Update the users_attendance to 'LOGGED IN'
                 $user->users_attendance = 'LOGGED IN';
                 $user->save(); // Save the change
-    
+
                 // Store the user ID in the session
                 session(['user_id' => $user->id]);
-    
+
                 // Redirect to staff home page
-                return response()->json(['success' => true, 'redirect' => route('staff.home.main')]);
+                return response()->json(['success' => true, 'redirect' => route('view-orders')]);
             } else {
                 // If the user has a different role, return an error
                 return response()->json(['success' => false, 'message' => 'Access denied. This account is not a staff member.']);
             }
         }
-    
-        // If user is not found
-        return response()->json(['success' => false, 'message' => 'Invalid PIN']);
+
+        // If user is not found, suggest contacting admin for PIN issues
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid PIN. If you forgot your PIN, please contact the admin. Provide your name and a screenshot of you, then send it to adminmstiniofoodstradingco@gmail.com.'
+        ]);
     }
     
 
@@ -188,30 +198,37 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-    
-        // Attempt to authenticate the user with the given email and password
+
+        // Attempt to find the user with the given email
         $user = User::where('email', $request->email)->first();
-    
+
         if ($user && Hash::check($request->password, $user->password)) {
             // Check if the user's status is 'CONFIRMED'
             if ($user->users_status === 'CONFIRMED') {
-                // Log the user in
-                Auth::login($user);
-    
-                // Store the user ID in the session
-                session(['user_id' => $user->id]);
-    
-                // Return a successful response with redirect URL
-                return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+                // Check if the user's role is 'purchasing-officer'
+                if ($user->role === 'purchasing-officer') {
+                    // Log the user in
+                    Auth::login($user);
+
+                    // Store the user ID in the session
+                    session(['user_id' => $user->id]);
+
+                    // Return a successful response with redirect URL
+                    return response()->json(['success' => true, 'redirect' => route('dashboard')]);
+                } else {
+                    // If the user's role is not 'purchasing-officer'
+                    return response()->json(['success' => false, 'message' => 'Access denied. You do not have the required role.']);
+                }
             } else {
                 // If the user's status is not confirmed
                 return response()->json(['success' => false, 'message' => 'Please wait for confirmation or contact the admin.']);
             }
         }
-    
+
         // If the credentials are incorrect
         return response()->json(['success' => false, 'message' => 'Invalid credentials. Please try again.']);
     }
+
 
 
     public function resetPassword(Request $request)
